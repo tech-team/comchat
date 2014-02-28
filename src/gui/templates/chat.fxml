@@ -9,18 +9,19 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.web.*?>
 
-<VBox layoutX="0.0" layoutY="0.0" prefHeight="344.0" prefWidth="483.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="chatform.Controller">
+<VBox layoutX="0.0" layoutY="0.0" prefHeight="344.0" prefWidth="483.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ChatController">
   <children>
     <MenuBar>
       <menus>
         <Menu mnemonicParsing="false" text="Connection">
           <items>
-            <MenuItem mnemonicParsing="false" text="Close" />
+            <MenuItem mnemonicParsing="false" text="Connect" onAction="#onMenuConnect"/>
+            <MenuItem mnemonicParsing="false" text="Disconnect" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Baud Rate">
           <items>
-            <MenuItem mnemonicParsing="false" text="Delete" />
+            <MenuItem mnemonicParsing="false" text="9600" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -34,7 +35,7 @@
       <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
           <children>
-            <WebView fx:id="webView" prefHeight="133.0" prefWidth="481.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"  AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <WebView fx:id="webView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="133.0" prefWidth="481.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
           </children>
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
@@ -49,7 +50,7 @@
         <ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
         <ToolBar maxHeight="1.7976931348623157E308">
           <items>
-            <Button mnemonicParsing="false" text="Send" fx:id="sendButton" onAction="#sendClick"/>
+            <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendClick" text="Send" />
           </items>
         </ToolBar>
       </children>
