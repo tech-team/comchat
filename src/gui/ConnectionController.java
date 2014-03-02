@@ -1,7 +1,7 @@
 package gui;
 
-/**
- * Created by Алексей on 28.02.14.
- */
+import javafx.scene.layout.VBox;
+
 public class ConnectionController {
+    public VBox layout;
 }
