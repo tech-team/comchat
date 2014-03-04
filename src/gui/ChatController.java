@@ -13,6 +13,10 @@ import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import layers.ChannelLayer;
 import layers.PhysicalLayer;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
+import sun.plugin.dom.html.HTMLDivElement;
 
 import java.io.IOException;
 
@@ -27,11 +31,19 @@ public class ChatController extends DataController {
     private PhysicalLayer physicalLayer = null;
 
     public void sendClick(ActionEvent actionEvent) {
+        Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
+        Element div = webView.getEngine().getDocument().createElement("div");
+        Text text = webView.getEngine().getDocument().createTextNode("ололо");
 
-        //TODO: replace apostrophes and tags with their html-save versions
-        webView.getEngine().executeScript(
-                "document.write('<b>Вася: </b>" + inputField.getText() + "<br>');");
-        inputField.setText("");
+        Element b = webView.getEngine().getDocument().createElement("b");
+        b.setTextContent("Вася: ");
+
+        div.appendChild(b);
+        div.appendChild(text);
+
+        body.appendChild(div);
+
+        inputField.clear();
     }
 
     public void onMenuConnect(ActionEvent actionEvent) throws IOException {
