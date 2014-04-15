@@ -181,14 +181,6 @@ public class ComPort {
         outStream.write(data);
     }
 
-    public void read() {
-        eventListener.dataAvailable(null);
-    }
-
-    private void dataAvailable(SerialPortEvent event) {
-        System.out.println(event.getNewValue());
-    }
-
     public static void main(String[] args) throws NoSuchPortException, IOException, InterruptedException, UnsupportedCommOperationException {
         ComPort layer = new ComPort();
         for (String port : ComPort.getAvailablePorts()) {
