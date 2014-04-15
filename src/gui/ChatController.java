@@ -12,11 +12,10 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
 import layers.ChannelLayer;
-import layers.PhysicalLayer;
+import layers.ComPort;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
-import sun.plugin.dom.html.HTMLDivElement;
 
 import java.io.IOException;
 
@@ -28,7 +27,7 @@ public class ChatController extends DataController {
     public VBox layout;
 
     private ChannelLayer channelLayer = null;
-    private PhysicalLayer physicalLayer = new PhysicalLayer();
+    private ComPort comPort = new ComPort();
 
     public void sendClick(ActionEvent actionEvent) {
         Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
@@ -51,7 +50,7 @@ public class ChatController extends DataController {
 
         Parent root = (Parent) loader.load();
 
-        connectionStage = new DataStage((DataController) loader.getController(), physicalLayer);
+        connectionStage = new DataStage((DataController) loader.getController(), comPort);
 
         connectionStage.setTitle("Connection");
         Scene conScene = new Scene(root);

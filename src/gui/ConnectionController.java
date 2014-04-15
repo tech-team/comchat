@@ -5,42 +5,40 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import layers.PhysicalLayer;
+import layers.ComPort;
 
 public class ConnectionController extends DataController {
     public GridPane layout;
-    public ComboBox<String> comPort;
+    public ComboBox<String> comPorts;
     public ComboBox<Integer> baudRate;
     public ComboBox<Integer> dataBits;
     public ComboBox<Integer> stopBits;
     public ComboBox<Integer> parityCheck;
 
-    private PhysicalLayer physicalLayer;
+    private ComPort comPort;
 
     @Override
     public void initWithData(Stage stage, Object data) {
         super.initWithData(stage, data);
-        physicalLayer = (PhysicalLayer) data;
+        comPort = (ComPort) data;
 
-        comPort.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailablePorts()));
-        baudRate.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableBaudRates()));
-        dataBits.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableDataBits()));
-        stopBits.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableStopBits()));
-        parityCheck.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableParity()));
+        comPorts.setItems(FXCollections.observableArrayList(ComPort.getAvailablePorts()));
+        baudRate.setItems(FXCollections.observableArrayList(ComPort.getAvailableBaudRates()));
+        dataBits.setItems(FXCollections.observableArrayList(ComPort.getAvailableDataBits()));
+        stopBits.setItems(FXCollections.observableArrayList(ComPort.getAvailableStopBits()));
+        parityCheck.setItems(FXCollections.observableArrayList(ComPort.getAvailableParity()));
 
-        comPort.setValue(PhysicalLayer.getDefaultPort());
-        baudRate.setValue(PhysicalLayer.getDefaultBaudRate());
-        dataBits.setValue(PhysicalLayer.getDefaultDataBits());
-        stopBits.setValue(PhysicalLayer.getDefaultStopBits());
-        parityCheck.setValue(PhysicalLayer.getDefaultParity());
+        comPorts.setValue(ComPort.getDefaultPort());
+        baudRate.setValue(ComPort.getDefaultBaudRate());
+        dataBits.setValue(ComPort.getDefaultDataBits());
+        stopBits.setValue(ComPort.getDefaultStopBits());
+        parityCheck.setValue(ComPort.getDefaultParity());
     }
 
 
     public void onConnect(ActionEvent event) {
-        physicalLayer.setSerialPortParams(baudRate.getValue(), dataBits.getValue(), stopBits.getValue(), parityCheck.getValue());
-
         try {
-            physicalLayer.connect(comPort.getValue());
+            comPort.connect(comPorts.getValue(), baudRate.getValue(), dataBits.getValue(), stopBits.getValue(), parityCheck.getValue());
             result = DialogResult.OK;
         }
         catch(Exception e) {

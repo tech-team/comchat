@@ -10,23 +10,19 @@ import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 
-public class PhysicalLayer implements SerialPortEventListener {
+public class ComPort {
     private static Logger LOGGER = Logger.getLogger("PhysicalLayerLogger");
     private static List<String> availablePorts;
     private static final String PORT_NAME = "ChatPort";
     private static final int TIME_OUT = 2000;
-    private int baudRate = -1;
-    private int dataBits = -1;
-    private int stopBits = -1;
-    private int parity = -1;
 
-
+    SerialEventListener eventListener;
     private SerialPort serialPort;
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected = false;
 
-    public PhysicalLayer() {
+    public ComPort() {
 
     }
 
@@ -113,14 +109,7 @@ public class PhysicalLayer implements SerialPortEventListener {
         return SerialPort.PARITY_NONE;
     }
 
-    public void setSerialPortParams(int baudRate, int dataBits, int stopBits, int parity) {
-        this.baudRate = baudRate;
-        this.dataBits = dataBits;
-        this.stopBits = stopBits;
-        this.parity = parity;
-    }
-
-    public void connect(String port) throws NoSuchPortException {
+    public void connect(String port, int baudRate, int dataBits, int stopBits, int parity) throws NoSuchPortException, UnsupportedCommOperationException {
         LOGGER.info("Connecting to port " + port);
         CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(port);
 
@@ -128,13 +117,8 @@ public class PhysicalLayer implements SerialPortEventListener {
             serialPort = (SerialPort) portId.open(PORT_NAME, TIME_OUT);
             LOGGER.info("Port " + port + " opened successfully");
 
-            if (checkSerialPortParams()) {
-                serialPort.setSerialPortParams(baudRate, dataBits, stopBits, parity);
-                serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-            }
-            else {
-                LOGGER.severe("SerialPort params are incorrect");
-            }
+            serialPort.setSerialPortParams(baudRate, dataBits, stopBits, parity);
+            serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 
             outStream = serialPort.getOutputStream();
             inStream = serialPort.getInputStream();
@@ -144,23 +128,34 @@ public class PhysicalLayer implements SerialPortEventListener {
         } catch (PortInUseException e) {
             LOGGER.warning("Port " + port + " is already in use");
         } catch (UnsupportedCommOperationException e) {
-            e.printStackTrace();
+            LOGGER.severe("Unsupported com port params");
+            disconnect();
+            throw e;
         } catch (IOException e) {
             LOGGER.severe("Error while opening streams for serial port");
             disconnect();
         }
 
         try {
-            serialPort.addEventListener(this);
+            eventListener = new SerialEventListener(inStream, outStream);
+            serialPort.addEventListener(eventListener);
             serialPort.notifyOnDataAvailable(true);
-            serialPort.notifyOnOutputEmpty(true);
+//            serialPort.notifyOnOutputEmpty(true);
+//            serialPort.notifyOnBreakInterrupt(true);
+//            serialPort.notifyOnCarrierDetect(true);
+//            serialPort.notifyOnCTS(true);
+//            serialPort.notifyOnDSR(true);
+//            serialPort.notifyOnFramingError(true);
+//            serialPort.notifyOnOverrunError(true);
+//            serialPort.notifyOnParityError(true);
+//            serialPort.notifyOnRingIndicator(true);
         } catch (TooManyListenersException e) {
             LOGGER.severe("Too many listeners");
             disconnect();
         }
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
         if (serialPort != null) {
             try {
                 outStream.close();
@@ -186,77 +181,40 @@ public class PhysicalLayer implements SerialPortEventListener {
         outStream.write(data);
     }
 
-    public void serialEvent(SerialPortEvent event) {
-        switch (event.getEventType()) {
-            case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
-//                outputBufferEmpty(event);
-                break;
-
-            case SerialPortEvent.DATA_AVAILABLE:
-                dataAvailable(event);
-                break;
-
-            case SerialPortEvent.BI:
-//                breakInterrupt(event);
-                break;
-
-            case SerialPortEvent.CD:
-//                carrierDetect(event);
-                break;
-
-            case SerialPortEvent.CTS:
-//                clearToSend(event);
-                break;
-
-            case SerialPortEvent.DSR:
-//                dataSetReady(event);
-                break;
-
-            case SerialPortEvent.FE:
-//                framingError(event);
-                break;
-
-            case SerialPortEvent.OE:
-//                overrunError(event);
-                break;
-
-            case SerialPortEvent.PE:
-//                parityError(event);
-                break;
-            case SerialPortEvent.RI:
-//                ringIndicator(event);
-                break;
-        }
+    public void read() {
+        eventListener.dataAvailable(null);
     }
 
     private void dataAvailable(SerialPortEvent event) {
         System.out.println(event.getNewValue());
     }
 
-
-    private boolean checkSerialPortParams() {
-        return baudRate != -1 && dataBits != -1 && stopBits != -1 && parity != -1;
-    }
-
-
-    public static void main(String[] args) throws NoSuchPortException, IOException, InterruptedException {
-        PhysicalLayer layer = new PhysicalLayer();
-        for (String port : PhysicalLayer.getAvailablePorts()) {
+    public static void main(String[] args) throws NoSuchPortException, IOException, InterruptedException, UnsupportedCommOperationException {
+        ComPort layer = new ComPort();
+        for (String port : ComPort.getAvailablePorts()) {
             System.out.println(port);
         }
 
-//        String port = "/dev/ttyS1600";
-//        layer.setSerialPortParams(57600, 8, 1, 0);
-//        layer.connect(port);
-//
+        String port = "/dev/ttyS600";
+//        String port = "/dev/ttyS1300";
+        layer.connect(port, 9600, 8, 1, 0);
+
 //        while (layer.isConnected()) {
-//            String data = "Hello, world\n";
-//            layer.write(data.getBytes());
-//            Thread.sleep(500);
-//        }
+//            layer.write("Hello, com port".getBytes());
+////            layer.read();
+//            Thread.sleep(1000);
 //
+//        }
+
+        Thread t = new Thread() {
+            public void run() {
+                //the following line will keep this app alive for 1000 seconds,
+                //waiting for events to occur and responding to them (printing incoming messages to console).
+                try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
+            }
+        };
+        t.start();
+
 //        layer.disconnect();
     }
-
-
 }
