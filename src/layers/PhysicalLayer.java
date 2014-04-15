@@ -5,11 +5,10 @@ import gnu.io.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TooManyListenersException;
+import java.util.*;
 import java.util.logging.Logger;
+
+import static java.util.Arrays.asList;
 
 public class PhysicalLayer implements SerialPortEventListener {
     private static Logger LOGGER = Logger.getLogger("PhysicalLayerLogger");
@@ -57,6 +56,11 @@ public class PhysicalLayer implements SerialPortEventListener {
         return getAvailablePorts(false);
     }
 
+    public static List<Integer> getAvailableBaudRates() {
+        return new ArrayList<Integer>(
+                asList(300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200));
+    }
+
     public static List<Integer> getAvailableDataBits() {
         List<Integer> dataBits = new LinkedList<Integer>();
         dataBits.add(SerialPort.DATABITS_5);
@@ -82,6 +86,31 @@ public class PhysicalLayer implements SerialPortEventListener {
         parity.add(SerialPort.PARITY_SPACE);
         parity.add(SerialPort.PARITY_NONE);
         return parity;
+    }
+
+    public static String getDefaultPort() {
+        String port = "";
+        List<String> ports = getAvailablePorts();
+        if (!ports.isEmpty())
+            port = ports.get(0);
+
+        return port;
+    }
+
+    public static int getDefaultBaudRate() {
+        return 9600;
+    }
+
+    public static int getDefaultDataBits() {
+        return SerialPort.DATABITS_8;
+    }
+
+    public static int getDefaultStopBits() {
+        return SerialPort.STOPBITS_1;
+    }
+
+    public static int getDefaultParity() {
+        return SerialPort.PARITY_NONE;
     }
 
     public void setSerialPortParams(int baudRate, int dataBits, int stopBits, int parity) {
@@ -216,17 +245,17 @@ public class PhysicalLayer implements SerialPortEventListener {
             System.out.println(port);
         }
 
-        String port = "/dev/ttyS1600";
-        layer.setSerialPortParams(57600, 8, 1, 0);
-        layer.connect(port);
-
-        while (layer.isConnected()) {
-            String data = "Hello, world\n";
-            layer.write(data.getBytes());
-            Thread.sleep(500);
-        }
-
-        layer.disconnect();
+//        String port = "/dev/ttyS1600";
+//        layer.setSerialPortParams(57600, 8, 1, 0);
+//        layer.connect(port);
+//
+//        while (layer.isConnected()) {
+//            String data = "Hello, world\n";
+//            layer.write(data.getBytes());
+//            Thread.sleep(500);
+//        }
+//
+//        layer.disconnect();
     }
 
 

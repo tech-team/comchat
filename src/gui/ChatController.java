@@ -28,7 +28,7 @@ public class ChatController extends DataController {
     public VBox layout;
 
     private ChannelLayer channelLayer = null;
-    private PhysicalLayer physicalLayer = null;
+    private PhysicalLayer physicalLayer = new PhysicalLayer();
 
     public void sendClick(ActionEvent actionEvent) {
         Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
