@@ -11,8 +11,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
-import layers.ChannelLayer;
-import layers.ComPort;
+import layers.dll.DataLinkLayer;
+import layers.phy.ComPort;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -26,7 +26,7 @@ public class ChatController extends DataController {
     public DataStage connectionStage;
     public VBox layout;
 
-    private ChannelLayer channelLayer = null;
+    private DataLinkLayer dataLinkLayer = null;
     private ComPort comPort = new ComPort();
 
     public void sendClick(ActionEvent actionEvent) {

@@ -5,7 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import layers.ComPort;
+import layers.phy.ComPort;
 
 public class ConnectionController extends DataController {
     public GridPane layout;
