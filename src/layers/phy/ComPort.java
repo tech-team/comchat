@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
@@ -23,11 +24,12 @@ public class ComPort implements IPhysicalLayer {
 
     private IDataLinkLayer dataLinkLayer;
 
-    SerialEventListener eventListener;
     private SerialPort serialPort;
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected = false;
+
+    private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
 
 
     public ComPort() {
@@ -41,7 +43,7 @@ public class ComPort implements IPhysicalLayer {
 
     private void setConnected(boolean status) {
         this.connected = status;
-        dataLinkLayer.notifyConnectionChanged(status);
+        notifyConnectionStatusChanged(status);
     }
 
     public static List<String> getAvailablePorts(boolean ignoreCache) {
@@ -137,8 +139,6 @@ public class ComPort implements IPhysicalLayer {
             serialPort = (SerialPort) portId.open(PORT_NAME, TIME_OUT);
             LOGGER.info("Port " + port + " opened successfully");
 
-            //TODO: sorry for fuckup, String -> int conversions needed, e.g. None -> 0 for parity
-//            serialPort.setSerialPortParams(9600, 8, 1, 0);
             serialPort.setSerialPortParams(settings.getBaudRate(), settings.getDataBits(), settings.getStopBits(), settings.getParity());
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 
@@ -157,7 +157,7 @@ public class ComPort implements IPhysicalLayer {
         }
 
         try {
-            eventListener = new SerialEventListener(inStream, outStream);
+            SerialEventListener eventListener = new SerialEventListener(inStream, outStream);
             serialPort.addEventListener(eventListener);
             serialPort.notifyOnDataAvailable(true);
 //            serialPort.notifyOnOutputEmpty(true);
@@ -208,6 +208,44 @@ public class ComPort implements IPhysicalLayer {
         outStream.write(data);
     }
 
+    @Override
+    public IDataLinkLayer getUpperLayer() {
+        return dataLinkLayer;
+    }
+
+    @Override
+    public ILayer getLowerLayer() {
+        return null;
+    }
+
+    @Override
+    public void setUpperLayer(ILayer layer) {
+        dataLinkLayer = (IDataLinkLayer) layer;
+    }
+
+    @Override
+    public void setLowerLayer(ILayer layer) {
+
+    }
+
+    @Override
+    public void subscribeConnectionStatusChanged(Consumer<Boolean> listener) {
+        connectionChangedListeners.add(listener);
+    }
+
+    private void notifyConnectionStatusChanged(boolean status) {
+        connectionChangedListeners.forEach(listener -> listener.accept(status));
+    }
+
+
+
+
+
+
+
+
+
+
     public static void main(String[] args) throws Exception {
         //TODO: replace with ProtocolStack
         IDataLinkLayer dll = new DataLinkLayer();
@@ -242,25 +280,5 @@ public class ComPort implements IPhysicalLayer {
         t.start();
 
 //        layer.disconnect();
-    }
-
-    @Override
-    public IDataLinkLayer getUpperLayer() {
-        return dataLinkLayer;
-    }
-
-    @Override
-    public ILayer getLowerLayer() {
-        return null;
-    }
-
-    @Override
-    public void setUpperLayer(ILayer layer) {
-        dataLinkLayer = (IDataLinkLayer) layer;
-    }
-
-    @Override
-    public void setLowerLayer(ILayer layer) {
-
     }
 }
