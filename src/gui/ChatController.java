@@ -5,8 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
@@ -27,6 +30,30 @@ public class ChatController extends DataController {
     public TextArea inputField;
     public DataStage connectionStage;
     public VBox layout;
+    public Circle statusIcon;
+    public Label statusText;
+
+    public enum Status {
+        NotConnected("Not connected", Color.RED),
+        Connected("Connected", Color.YELLOWGREEN),
+        Error("Error", Color.RED);
+
+        private final String value;
+        private final Color color;
+
+        private Status(String value, Color color) {
+            this.value = value;
+            this.color = color;
+        }
+
+        public String toString() {
+            return value;
+        }
+
+        public Color toColor() {
+            return color;
+        }
+    }
 
     private ProtocolStack protocolStack;
 
@@ -37,6 +64,9 @@ public class ChatController extends DataController {
 
         WebEngine engine = webView.getEngine();
         engine.loadContent(getHtmlPage());
+
+        statusIcon.setFill(Status.NotConnected.toColor());
+        statusText.setText(Status.NotConnected.toString());
     }
 
     public void sendClick(ActionEvent actionEvent) {
@@ -82,7 +112,11 @@ public class ChatController extends DataController {
                 .masthead("Information")
                 .message("Successfully connected")
                 .showInformation();
-        } else {
+
+            statusIcon.setFill(Status.Connected.toColor());
+            statusText.setText(Status.Connected.toString());
+        }
+        else {
             Dialogs.create()
                 .owner(stage)
                 .title("ComChat")

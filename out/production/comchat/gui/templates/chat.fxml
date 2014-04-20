@@ -7,21 +7,17 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.shape.*?>
 <?import javafx.scene.web.*?>
 
-<VBox layoutX="0.0" layoutY="0.0" prefHeight="344.0" prefWidth="483.0" fx:id="layout" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ChatController">
+<VBox fx:id="layout" layoutX="0.0" layoutY="0.0" prefHeight="344.0" prefWidth="483.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ChatController">
   <children>
     <MenuBar>
       <menus>
         <Menu mnemonicParsing="false" text="Connection">
           <items>
-            <MenuItem mnemonicParsing="false" text="Connect" onAction="#onMenuConnect"/>
+            <MenuItem mnemonicParsing="false" onAction="#onMenuConnect" text="Connect" />
             <MenuItem mnemonicParsing="false" text="Disconnect" />
-          </items>
-        </Menu>
-        <Menu mnemonicParsing="false" text="Baud Rate">
-          <items>
-            <MenuItem mnemonicParsing="false" text="9600" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">
@@ -47,7 +43,12 @@
     </SplitPane>
     <HBox prefHeight="40.0" prefWidth="318.0">
       <children>
-        <ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+        <ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+          <items>
+            <Circle fx:id="statusIcon" fill="RED" radius="6.00006103515625" stroke="BLACK" strokeType="INSIDE" />
+            <Label fx:id="statusText" text="Not connected" textFill="#636363" />
+          </items>
+        </ToolBar>
         <ToolBar maxHeight="1.7976931348623157E308">
           <items>
             <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendClick" text="Send" />
