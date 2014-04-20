@@ -1,4 +1,6 @@
-package layers.phy.settings;
+package layers.phy.settings.comport_settings;
+
+import layers.phy.settings.PhysicalLayerSettings;
 
 /**
  * Created by Igor on 4/20/2014.

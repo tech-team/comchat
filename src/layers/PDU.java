@@ -2,7 +2,7 @@ package layers;
 
 import java.io.*;
 
-public class PDU {
+public abstract class PDU {
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(out);

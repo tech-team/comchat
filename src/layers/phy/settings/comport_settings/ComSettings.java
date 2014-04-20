@@ -1,4 +1,6 @@
-package layers.phy.settings;
+package layers.phy.settings.comport_settings;
+
+import layers.phy.settings.PhySettings;
 
 public enum ComSettings implements PhySettings {
     PORT_NAME,
