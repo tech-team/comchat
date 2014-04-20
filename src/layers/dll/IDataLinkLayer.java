@@ -1,10 +1,10 @@
 package layers.dll;
 
 import layers.ILayer;
-import layers.phy.settings.ComPortSettings;
+import layers.phy.settings.PhysicalLayerSettings;
 
 public interface IDataLinkLayer extends ILayer {
-    public void connect(ComPortSettings settings);
-    public void send(byte[] msg);
-    public void receive(byte[] data);
+    void connect(PhysicalLayerSettings settings) throws Exception;
+    void send(byte[] msg);
+    void receive(byte[] data);
 }

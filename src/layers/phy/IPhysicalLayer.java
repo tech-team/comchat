@@ -11,5 +11,5 @@ public interface IPhysicalLayer extends ILayer {
     void connect(PhysicalLayerSettings settings) throws Exception;
     void disconnect();
     void write(byte[] data) throws IOException;
-    public void subscribeConnectionStatusChanged(Consumer<Boolean> listener);
+    void subscribeConnectionStatusChanged(Consumer<Boolean> listener);
 }
