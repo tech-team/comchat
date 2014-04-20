@@ -2,9 +2,6 @@ package layers.phy.settings.comport_settings;
 
 import gnu.io.SerialPort;
 
-/**
- * Created by Igor on 4/21/2014.
- */
 public enum DataBitsEnum {
     DataBits5("5 bits", SerialPort.DATABITS_5),
     DataBits6("6 bits", SerialPort.DATABITS_6),

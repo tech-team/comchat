@@ -2,9 +2,6 @@ package layers.phy.settings.comport_settings;
 
 import gnu.io.SerialPort;
 
-/**
-* Created by Igor on 4/21/2014.
-*/
 public enum ParityEnum {
     Even(SerialPort.PARITY_EVEN),
     Mark(SerialPort.PARITY_MARK),

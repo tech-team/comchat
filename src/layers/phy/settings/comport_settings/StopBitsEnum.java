@@ -2,9 +2,6 @@ package layers.phy.settings.comport_settings;
 
 import gnu.io.SerialPort;
 
-/**
- * Created by Igor on 4/21/2014.
- */
 public enum StopBitsEnum {
     StopBits1("1", SerialPort.STOPBITS_1),
     StopBits1_5("1.5", SerialPort.STOPBITS_1_5),

@@ -1,6 +1,4 @@
-package layers.phy;/*
- * Created by igor on 4/15/14.
- */
+package layers.phy;
 
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;

@@ -2,9 +2,6 @@ package layers.phy.settings.comport_settings;
 
 import layers.phy.settings.PhysicalLayerSettings;
 
-/**
- * Created by Igor on 4/20/2014.
- */
 public class ComPortSettings extends PhysicalLayerSettings {
 
     public ComPortSettings(String port, int baudRate, int dataBits, int stopBits, int parity) {
