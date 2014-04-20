@@ -1,20 +1,15 @@
 package layers.apl;
 
-public class Message {
+import layers.PDU;
+
+public class Message extends PDU {
     public enum Type { Auth, Msg, Ack, Term, TermAck }
 
     Type type;
     String msg;
 
-    public Message(byte[] data) {
-
-    }
-
-    public byte[] serialize() {
-        return new byte[] {};
-    }
-
-    public static Message deserialize(byte[] data) {
-        return new Message(null);
+    public Message(Type type, String msg) {
+        this.type = type;
+        this.msg = msg;
     }
 }

@@ -1,6 +1,8 @@
 package layers.dll;
 
-public class Frame {
+import layers.PDU;
+
+public class Frame extends PDU {
     public enum Type { I, S }
 
     private boolean ACK = false;
@@ -11,14 +13,5 @@ public class Frame {
 
     public Frame(byte[] msg) {
         this.msg = msg;
-    }
-
-    public byte[] serialize() {
-        //todo
-        return new byte[] {};
-    }
-
-    public static Frame deserialize(byte[] data) {
-        return new Frame(null);
     }
 }
