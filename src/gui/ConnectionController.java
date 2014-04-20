@@ -7,6 +7,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.phy.ComPort;
 import layers.phy.ComPortSettings;
+import layers.phy.IComPort;
 
 public class ConnectionController extends DataController {
     public GridPane layout;
@@ -16,12 +17,12 @@ public class ConnectionController extends DataController {
     public ComboBox<Integer> stopBits;
     public ComboBox<Integer> parityCheck;
 
-    private ComPort comPort;
+    private IComPort comPort;
 
     @Override
     public void initWithData(Stage stage, Object data) {
         super.initWithData(stage, data);
-        comPort = (ComPort) data;
+        comPort = (IComPort) data;
 
         comPorts.setItems(FXCollections.observableArrayList(ComPort.getAvailablePorts()));
         baudRate.setItems(FXCollections.observableArrayList(ComPort.getAvailableBaudRates()));
