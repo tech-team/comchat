@@ -3,15 +3,15 @@ package layers.dll;
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
 import layers.phy.IPhysicalLayer;
-import layers.phy.settings.ComPortSettings;
+import layers.phy.settings.PhysicalLayerSettings;
 
 public class DataLinkLayer implements IDataLinkLayer {
-    IApplicationLayer apl;
-    IPhysicalLayer phy;
+    private IApplicationLayer apl;
+    private IPhysicalLayer phy;
 
     @Override
-    public void connect(ComPortSettings settings) {
-
+    public void connect(PhysicalLayerSettings settings) throws Exception {
+        phy.connect(settings);
     }
 
     @Override
