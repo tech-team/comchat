@@ -5,16 +5,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Dialogs;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import layers.dll.DataLinkLayer;
-import layers.dll.IDataLinkLayer;
-import layers.phy.ComPort;
-import layers.phy.IComPort;
+import layers.ProtocolStack;
+import org.controlsfx.dialog.Dialogs;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -28,8 +26,14 @@ public class ChatController extends DataController {
     public DataStage connectionStage;
     public VBox layout;
 
-    private IDataLinkLayer dataLinkLayer = new DataLinkLayer();
-    private IComPort comPort = new ComPort(dataLinkLayer);
+    private ProtocolStack protocolStack;
+
+    @Override
+    public void initWithData(Stage stage, Object data) {
+        super.initWithData(stage, data);
+
+        protocolStack = (ProtocolStack) data;
+    }
 
     public void sendClick(ActionEvent actionEvent) {
         Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
@@ -52,7 +56,7 @@ public class ChatController extends DataController {
 
         Parent root = (Parent) loader.load();
 
-        connectionStage = new DataStage((DataController) loader.getController(), comPort);
+        connectionStage = new DataStage((DataController) loader.getController(), protocolStack);
 
         connectionStage.setTitle("Connection");
         Scene conScene = new Scene(root);
@@ -65,11 +69,19 @@ public class ChatController extends DataController {
         connectionStage.showAndWait();
 
         if (connectionStage.getResult() == DialogResult.OK) {
-            Dialogs.showInformationDialog(stage, "We have successfully connected!",
-                    "Information Dialog", "Connection");
+            Dialogs.create()
+                .owner(stage)
+                .title("ComChat")
+                .masthead("Information")
+                .message("Successfully connected")
+                .showInformation();
         } else {
-            Dialogs.showInformationDialog(stage, "Connection cancelled!",
-                    "Information Dialog", "Connection");
+            Dialogs.create()
+                .owner(stage)
+                .title("ComChat")
+                .masthead("Information")
+                .message("Connection cancelled")
+                .showInformation();
         }
     }
 }

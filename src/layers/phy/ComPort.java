@@ -1,6 +1,7 @@
 package layers.phy;
 
 import gnu.io.*;
+import layers.ILayer;
 import layers.dll.DataLinkLayer;
 import layers.dll.IDataLinkLayer;
 
@@ -12,7 +13,8 @@ import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 
-public class ComPort implements IComPort {
+//TODO: rename to PhysicalLayer [and remove IComPort interface]
+public class ComPort implements IPhysicalLayer {
     private static Logger LOGGER = Logger.getLogger("PhysicalLayerLogger");
     private static List<String> availablePorts;
     private static final String PORT_NAME = "ChatPort";
@@ -27,8 +29,8 @@ public class ComPort implements IComPort {
     private boolean connected = false;
 
 
-    public ComPort(IDataLinkLayer dataLinkLayer) {
-        this.dataLinkLayer = dataLinkLayer;
+    public ComPort() {
+
     }
 
     @Override
@@ -120,22 +122,26 @@ public class ComPort implements IComPort {
     }
 
     @Override
-    public void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
-        LOGGER.info("Connecting to port " + settings.getPort());
-        CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(settings.getPort());
+    public void connect(Map<String, String> settings) throws NoSuchPortException, UnsupportedCommOperationException {
+        String port = settings.get("port");
+
+        LOGGER.info("Connecting to port " + port);
+        CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(port);
 
         try {
             serialPort = (SerialPort) portId.open(PORT_NAME, TIME_OUT);
-            LOGGER.info("Port " + settings.getPort() + " opened successfully");
+            LOGGER.info("Port " + port + " opened successfully");
 
-            serialPort.setSerialPortParams(settings.getBaudRate(), settings.getDataBits(), settings.getStopBits(), settings.getParity());
+            //TODO: sorry for fuckup, String -> int conversions needed, e.g. None -> 0 for parity
+            serialPort.setSerialPortParams(9600, 8, 1, 0);
+            //serialPort.setSerialPortParams(settings.getBaudRate(), settings.getDataBits(), settings.getStopBits(), settings.getParity());
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 
             outStream = serialPort.getOutputStream();
             inStream = serialPort.getInputStream();
 
         } catch (PortInUseException e) {
-            LOGGER.warning("Port " + settings.getPort() + " is already in use");
+            LOGGER.warning("Port " + port + " is already in use");
         } catch (UnsupportedCommOperationException e) {
             LOGGER.severe("Unsupported com port params");
             disconnect();
@@ -197,14 +203,22 @@ public class ComPort implements IComPort {
         outStream.write(data);
     }
 
-    public static void main(String[] args) throws NoSuchPortException, IOException, InterruptedException, UnsupportedCommOperationException {
+    public static void main(String[] args) throws Exception {
+        //TODO: replace with ProtocolStack
         IDataLinkLayer dll = new DataLinkLayer();
-        IComPort layer = new ComPort(dll);
+        IPhysicalLayer layer = new ComPort();
+        layer.setUpperLayer(dll);
+
         ComPort.getAvailablePorts().forEach(System.out::println);
 
         String port = "COM3";
 //        String port = "/dev/ttyS1300";
-        layer.connect(new ComPortSettings(port, 9600, 8, 1, 0));
+        //TODO: sorry once again
+        //Setting should be Map, so it can be passed through abstract interface's connect method
+        Map<String, String> settings = new HashMap<>();
+        settings.put("port", port);
+        layer.connect(settings);
+        //layer.connect(new ComPortSettings(port, 9600, 8, 1, 0));
 
 //        while (layer.isConnected()) {
 //            layer.write("Hello, com port".getBytes());
@@ -223,5 +237,15 @@ public class ComPort implements IComPort {
         t.start();
 
 //        layer.disconnect();
+    }
+
+    @Override
+    public IDataLinkLayer getUpperLayer() {
+        return dataLinkLayer;
+    }
+
+    @Override
+    public void setUpperLayer(ILayer layer) {
+        dataLinkLayer = (IDataLinkLayer) layer;
     }
 }

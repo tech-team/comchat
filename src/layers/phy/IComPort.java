@@ -5,10 +5,8 @@ import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
-/**
- * Created by Igor on 4/20/2014.
- */
-public interface IComPort {
+@Deprecated
+public interface IComPort extends IPhysicalLayer {
     boolean isConnected();
     void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException;
     void disconnect();

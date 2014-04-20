@@ -1,13 +1,11 @@
 package layers.dll;
 
+import layers.ILayer;
 import layers.phy.ComPortSettings;
 
 import java.util.function.Consumer;
 
-/**
- * Created by Igor on 4/20/2014.
- */
-public interface IDataLinkLayer {
+public interface IDataLinkLayer extends ILayer {
     public void connect(ComPortSettings settings);
     public void send(byte[] msg);
     public void receive(byte[] data);
