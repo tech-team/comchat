@@ -6,11 +6,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.ProtocolStack;
-import layers.phy.PhysicalLayer;
+import layers.phy.ComPort;
+import layers.phy.settings.ComPortSettings;
 import org.controlsfx.dialog.Dialogs;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class ConnectionController extends DataController {
     public GridPane layout;
@@ -27,33 +25,33 @@ public class ConnectionController extends DataController {
         super.initWithData(stage, data);
         protocolStack = (ProtocolStack) data;
 
-        comPort.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailablePorts()));
-        baudRate.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableBaudRates()));
-        dataBits.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableDataBits()));
-        stopBits.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableStopBits()));
-        parityCheck.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableParity()));
+        comPort.setItems(FXCollections.observableArrayList(ComPort.getAvailablePorts()));
+        baudRate.setItems(FXCollections.observableArrayList(ComPort.getAvailableBaudRates()));
+        dataBits.setItems(FXCollections.observableArrayList(ComPort.getAvailableDataBits()));
+        stopBits.setItems(FXCollections.observableArrayList(ComPort.getAvailableStopBits()));
+        parityCheck.setItems(FXCollections.observableArrayList(ComPort.getAvailableParity()));
 
-        comPort.setValue(PhysicalLayer.getDefaultPort());
-        baudRate.setValue(PhysicalLayer.getDefaultBaudRate());
-        dataBits.setValue(PhysicalLayer.getDefaultDataBits());
-        stopBits.setValue(PhysicalLayer.getDefaultStopBits());
-        parityCheck.setValue(PhysicalLayer.getDefaultParity());
+        comPort.setValue(ComPort.getDefaultPort());
+        baudRate.setValue(ComPort.getDefaultBaudRate());
+        dataBits.setValue(ComPort.getDefaultDataBits());
+        stopBits.setValue(ComPort.getDefaultStopBits());
+        parityCheck.setValue(ComPort.getDefaultParity());
     }
 
 
     public void onConnect(ActionEvent event) {
         try {
-            Map<String, String> settings = new HashMap<>();
-            settings.put("port", comPort.getValue());
-            //TODO: fill map with all the settings
+//            Map<String, String> settings = new HashMap<>();
+//            settings.put("port", comPort.getValue());
+//            //TODO: fill map with all the settings
+//
+//            protocolStack.getPhy().connect(settings);
 
-            protocolStack.getPhy().connect(settings);
-
-            /*protocolStack.getPhy().connect(new ComPortSettings(comPorts.getValue(),
-                    baudRate.getValue(),
-                    dataBits.getValue(),
-                    stopBits.getValue(),
-                    parityCheck.getValue()));*/
+            protocolStack.getPhy().connect(new ComPortSettings(comPort.getValue(),
+                                                               baudRate.getValue(),
+                                                               dataBits.getValue(),
+                                                               stopBits.getValue(),
+                                                               parityCheck.getValue()));
             result = DialogResult.OK;
             this.close();
         }

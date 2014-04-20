@@ -4,6 +4,8 @@ import gnu.io.*;
 import layers.ILayer;
 import layers.dll.DataLinkLayer;
 import layers.dll.IDataLinkLayer;
+import layers.phy.settings.ComPortSettings;
+import layers.phy.settings.PhysicalLayerSettings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +15,7 @@ import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 
-public class PhysicalLayer implements IPhysicalLayer {
+public class ComPort implements IPhysicalLayer {
     private static Logger LOGGER = Logger.getLogger("PhysicalLayerLogger");
     private static List<String> availablePorts;
     private static final String PORT_NAME = "ChatPort";
@@ -28,7 +30,7 @@ public class PhysicalLayer implements IPhysicalLayer {
     private boolean connected = false;
 
 
-    public PhysicalLayer() {
+    public ComPort() {
 
     }
 
@@ -46,7 +48,7 @@ public class PhysicalLayer implements IPhysicalLayer {
         if (!ignoreCache && availablePorts != null)
             return availablePorts;
 
-        availablePorts = new LinkedList<String>();
+        availablePorts = new LinkedList<>();
 
         Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
 
@@ -69,7 +71,7 @@ public class PhysicalLayer implements IPhysicalLayer {
     }
 
     public static List<Integer> getAvailableDataBits() {
-        List<Integer> dataBits = new LinkedList<Integer>();
+        List<Integer> dataBits = new LinkedList<>();
         dataBits.add(SerialPort.DATABITS_5);
         dataBits.add(SerialPort.DATABITS_6);
         dataBits.add(SerialPort.DATABITS_7);
@@ -78,7 +80,7 @@ public class PhysicalLayer implements IPhysicalLayer {
     }
 
     public static List<Integer> getAvailableStopBits() {
-        List<Integer> stopBits = new LinkedList<Integer>();
+        List<Integer> stopBits = new LinkedList<>();
         stopBits.add(SerialPort.STOPBITS_1);
         stopBits.add(SerialPort.STOPBITS_1_5);
         stopBits.add(SerialPort.STOPBITS_2);
@@ -86,7 +88,7 @@ public class PhysicalLayer implements IPhysicalLayer {
     }
 
     public static List<Integer> getAvailableParity() {
-        List<Integer> parity = new LinkedList<Integer>();
+        List<Integer> parity = new LinkedList<>();
         parity.add(SerialPort.PARITY_EVEN);
         parity.add(SerialPort.PARITY_MARK);
         parity.add(SerialPort.PARITY_ODD);
@@ -121,8 +123,12 @@ public class PhysicalLayer implements IPhysicalLayer {
     }
 
     @Override
-    public void connect(Map<String, String> settings) throws NoSuchPortException, UnsupportedCommOperationException {
-        String port = settings.get("port");
+    public void connect(PhysicalLayerSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
+        connect((ComPortSettings) settings);
+    }
+
+    private void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
+        String port = settings.getPort();
 
         LOGGER.info("Connecting to port " + port);
         CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(port);
@@ -132,8 +138,8 @@ public class PhysicalLayer implements IPhysicalLayer {
             LOGGER.info("Port " + port + " opened successfully");
 
             //TODO: sorry for fuckup, String -> int conversions needed, e.g. None -> 0 for parity
-            serialPort.setSerialPortParams(9600, 8, 1, 0);
-            //serialPort.setSerialPortParams(settings.getBaudRate(), settings.getDataBits(), settings.getStopBits(), settings.getParity());
+//            serialPort.setSerialPortParams(9600, 8, 1, 0);
+            serialPort.setSerialPortParams(settings.getBaudRate(), settings.getDataBits(), settings.getStopBits(), settings.getParity());
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 
             outStream = serialPort.getOutputStream();
@@ -205,18 +211,18 @@ public class PhysicalLayer implements IPhysicalLayer {
     public static void main(String[] args) throws Exception {
         //TODO: replace with ProtocolStack
         IDataLinkLayer dll = new DataLinkLayer();
-        IPhysicalLayer layer = new PhysicalLayer();
+        IPhysicalLayer layer = new ComPort();
         layer.setUpperLayer(dll);
 
-        PhysicalLayer.getAvailablePorts().forEach(System.out::println);
+        ComPort.getAvailablePorts().forEach(System.out::println);
 
         String port = "COM3";
 //        String port = "/dev/ttyS1300";
         //TODO: sorry once again
         //Setting should be Map, so it can be passed through abstract interface's connect method
-        Map<String, String> settings = new HashMap<>();
-        settings.put("port", port);
-        layer.connect(settings);
+//        Map<String, String> settings = new HashMap<>();
+//        settings.put("port", port);
+//        layer.connect(settings);
         //layer.connect(new ComPortSettings(port, 9600, 8, 1, 0));
 
 //        while (layer.isConnected()) {

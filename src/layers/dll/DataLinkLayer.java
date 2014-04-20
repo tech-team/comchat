@@ -2,7 +2,7 @@ package layers.dll;
 
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
-import layers.phy.ComPortSettings;
+import layers.phy.settings.ComPortSettings;
 import layers.phy.IPhysicalLayer;
 
 import java.util.LinkedList;
