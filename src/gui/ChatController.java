@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -33,29 +32,8 @@ public class ChatController extends DataController {
     public Circle statusIcon;
     public Label statusText;
 
-    public enum Status {
-        NotConnected("Not connected", Color.RED),
-        Connected("Connected", Color.YELLOWGREEN),
-        Error("Error", Color.RED);
-
-        private final String value;
-        private final Color color;
-
-        private Status(String value, Color color) {
-            this.value = value;
-            this.color = color;
-        }
-
-        public String toString() {
-            return value;
-        }
-
-        public Color toColor() {
-            return color;
-        }
-    }
-
     private ProtocolStack protocolStack;
+    private Status status;
 
     @Override
     public void initWithData(Stage stage, Object data) {
@@ -67,6 +45,14 @@ public class ChatController extends DataController {
 
         statusIcon.setFill(Status.NotConnected.toColor());
         statusText.setText(Status.NotConnected.toString());
+
+        protocolStack.getPhy().subscribeConnectionStatusChanged(this::updateStatus);
+    }
+
+    private void updateStatus(Boolean connected) {
+        status = Status.fromBoolean(connected);
+        statusIcon.setFill(status.toColor());
+        statusText.setText(status.toString());
     }
 
     public void sendClick(ActionEvent actionEvent) {
