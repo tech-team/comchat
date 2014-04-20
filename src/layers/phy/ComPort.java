@@ -1,6 +1,8 @@
 package layers.phy;
 
 import gnu.io.*;
+import layers.dll.DataLinkLayer;
+import layers.dll.IDataLinkLayer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,18 +18,26 @@ public class ComPort {
     private static final String PORT_NAME = "ChatPort";
     private static final int TIME_OUT = 2000;
 
+    private IDataLinkLayer dataLinkLayer;
+
     SerialEventListener eventListener;
     private SerialPort serialPort;
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected = false;
 
-    public ComPort() {
 
+    public ComPort(IDataLinkLayer dataLinkLayer) {
+        this.dataLinkLayer = dataLinkLayer;
     }
 
     public boolean isConnected() {
         return connected;
+    }
+
+    private void setConnected(boolean status) {
+        this.connected = status;
+        dataLinkLayer.notifyConnectionChanged(status);
     }
 
     public static List<String> getAvailablePorts(boolean ignoreCache) {
@@ -53,8 +63,7 @@ public class ComPort {
     }
 
     public static List<Integer> getAvailableBaudRates() {
-        return new ArrayList<Integer>(
-                asList(300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200));
+        return asList(300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200);
     }
 
     public static List<Integer> getAvailableDataBits() {
@@ -109,24 +118,22 @@ public class ComPort {
         return SerialPort.PARITY_NONE;
     }
 
-    public void connect(String port, int baudRate, int dataBits, int stopBits, int parity) throws NoSuchPortException, UnsupportedCommOperationException {
-        LOGGER.info("Connecting to port " + port);
-        CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(port);
+    public void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
+        LOGGER.info("Connecting to port " + settings.getPort());
+        CommPortIdentifier portId = CommPortIdentifier.getPortIdentifier(settings.getPort());
 
         try {
             serialPort = (SerialPort) portId.open(PORT_NAME, TIME_OUT);
-            LOGGER.info("Port " + port + " opened successfully");
+            LOGGER.info("Port " + settings.getPort() + " opened successfully");
 
-            serialPort.setSerialPortParams(baudRate, dataBits, stopBits, parity);
+            serialPort.setSerialPortParams(settings.getBaudRate(), settings.getDataBits(), settings.getStopBits(), settings.getParity());
             serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 
             outStream = serialPort.getOutputStream();
             inStream = serialPort.getInputStream();
 
-            connected = true;
-
         } catch (PortInUseException e) {
-            LOGGER.warning("Port " + port + " is already in use");
+            LOGGER.warning("Port " + settings.getPort() + " is already in use");
         } catch (UnsupportedCommOperationException e) {
             LOGGER.severe("Unsupported com port params");
             disconnect();
@@ -153,6 +160,8 @@ public class ComPort {
             LOGGER.severe("Too many listeners");
             disconnect();
         }
+
+        setConnected(true);
     }
 
     public synchronized void disconnect() {
@@ -174,7 +183,7 @@ public class ComPort {
             LOGGER.info("Port is not opened");
         }
 
-        connected = false;
+        setConnected(false);
     }
 
     public void write(byte[] data) throws IOException {
@@ -182,14 +191,15 @@ public class ComPort {
     }
 
     public static void main(String[] args) throws NoSuchPortException, IOException, InterruptedException, UnsupportedCommOperationException {
-        ComPort layer = new ComPort();
+        IDataLinkLayer dll = new DataLinkLayer();
+        ComPort layer = new ComPort(dll);
         for (String port : ComPort.getAvailablePorts()) {
             System.out.println(port);
         }
 
         String port = "/dev/ttyS600";
 //        String port = "/dev/ttyS1300";
-        layer.connect(port, 9600, 8, 1, 0);
+//        layer.connect(port, 9600, 8, 1, 0);
 
 //        while (layer.isConnected()) {
 //            layer.write("Hello, com port".getBytes());
@@ -198,14 +208,14 @@ public class ComPort {
 //
 //        }
 
-        Thread t = new Thread() {
-            public void run() {
-                //the following line will keep this app alive for 1000 seconds,
-                //waiting for events to occur and responding to them (printing incoming messages to console).
-                try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
-            }
-        };
-        t.start();
+//        Thread t = new Thread() {
+//            public void run() {
+//                //the following line will keep this app alive for 1000 seconds,
+//                //waiting for events to occur and responding to them (printing incoming messages to console).
+//                try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
+//            }
+//        };
+//        t.start();
 
 //        layer.disconnect();
     }

@@ -6,6 +6,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.phy.ComPort;
+import layers.phy.ComPortSettings;
 
 public class ConnectionController extends DataController {
     public GridPane layout;
@@ -38,7 +39,11 @@ public class ConnectionController extends DataController {
 
     public void onConnect(ActionEvent event) {
         try {
-            comPort.connect(comPorts.getValue(), baudRate.getValue(), dataBits.getValue(), stopBits.getValue(), parityCheck.getValue());
+            comPort.connect(new ComPortSettings(comPorts.getValue(),
+                                                baudRate.getValue(),
+                                                dataBits.getValue(),
+                                                stopBits.getValue(),
+                                                parityCheck.getValue()));
             result = DialogResult.OK;
         }
         catch(Exception e) {
