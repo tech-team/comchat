@@ -8,13 +8,13 @@ import javafx.stage.Stage;
 import layers.ProtocolStack;
 import layers.apl.ApplicationLayer;
 import layers.dll.DataLinkLayer;
-import layers.phy.PhysicalLayer;
+import layers.phy.ComPort;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        ProtocolStack stack = new ProtocolStack(ApplicationLayer.class, DataLinkLayer.class, PhysicalLayer.class);
+        ProtocolStack stack = new ProtocolStack(ApplicationLayer.class, DataLinkLayer.class, ComPort.class);
 
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/gui/templates/chat.fxml"));
         Parent root = loader.load();

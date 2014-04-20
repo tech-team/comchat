@@ -1,7 +1,7 @@
 package layers.dll;
 
 import layers.ILayer;
-import layers.phy.ComPortSettings;
+import layers.phy.settings.ComPortSettings;
 
 import java.util.function.Consumer;
 
