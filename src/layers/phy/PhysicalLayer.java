@@ -13,8 +13,7 @@ import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 
-//TODO: rename to PhysicalLayer [and remove IComPort interface]
-public class ComPort implements IPhysicalLayer {
+public class PhysicalLayer implements IPhysicalLayer {
     private static Logger LOGGER = Logger.getLogger("PhysicalLayerLogger");
     private static List<String> availablePorts;
     private static final String PORT_NAME = "ChatPort";
@@ -29,7 +28,7 @@ public class ComPort implements IPhysicalLayer {
     private boolean connected = false;
 
 
-    public ComPort() {
+    public PhysicalLayer() {
 
     }
 
@@ -206,10 +205,10 @@ public class ComPort implements IPhysicalLayer {
     public static void main(String[] args) throws Exception {
         //TODO: replace with ProtocolStack
         IDataLinkLayer dll = new DataLinkLayer();
-        IPhysicalLayer layer = new ComPort();
+        IPhysicalLayer layer = new PhysicalLayer();
         layer.setUpperLayer(dll);
 
-        ComPort.getAvailablePorts().forEach(System.out::println);
+        PhysicalLayer.getAvailablePorts().forEach(System.out::println);
 
         String port = "COM3";
 //        String port = "/dev/ttyS1300";
@@ -245,7 +244,17 @@ public class ComPort implements IPhysicalLayer {
     }
 
     @Override
+    public ILayer getLowerLayer() {
+        return null;
+    }
+
+    @Override
     public void setUpperLayer(ILayer layer) {
         dataLinkLayer = (IDataLinkLayer) layer;
+    }
+
+    @Override
+    public void setLowerLayer(ILayer layer) {
+
     }
 }

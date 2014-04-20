@@ -6,7 +6,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.ProtocolStack;
-import layers.phy.ComPort;
+import layers.phy.PhysicalLayer;
 import org.controlsfx.dialog.Dialogs;
 
 import java.util.HashMap;
@@ -27,17 +27,17 @@ public class ConnectionController extends DataController {
         super.initWithData(stage, data);
         protocolStack = (ProtocolStack) data;
 
-        comPort.setItems(FXCollections.observableArrayList(ComPort.getAvailablePorts()));
-        baudRate.setItems(FXCollections.observableArrayList(ComPort.getAvailableBaudRates()));
-        dataBits.setItems(FXCollections.observableArrayList(ComPort.getAvailableDataBits()));
-        stopBits.setItems(FXCollections.observableArrayList(ComPort.getAvailableStopBits()));
-        parityCheck.setItems(FXCollections.observableArrayList(ComPort.getAvailableParity()));
+        comPort.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailablePorts()));
+        baudRate.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableBaudRates()));
+        dataBits.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableDataBits()));
+        stopBits.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableStopBits()));
+        parityCheck.setItems(FXCollections.observableArrayList(PhysicalLayer.getAvailableParity()));
 
-        comPort.setValue(ComPort.getDefaultPort());
-        baudRate.setValue(ComPort.getDefaultBaudRate());
-        dataBits.setValue(ComPort.getDefaultDataBits());
-        stopBits.setValue(ComPort.getDefaultStopBits());
-        parityCheck.setValue(ComPort.getDefaultParity());
+        comPort.setValue(PhysicalLayer.getDefaultPort());
+        baudRate.setValue(PhysicalLayer.getDefaultBaudRate());
+        dataBits.setValue(PhysicalLayer.getDefaultDataBits());
+        stopBits.setValue(PhysicalLayer.getDefaultStopBits());
+        parityCheck.setValue(PhysicalLayer.getDefaultParity());
     }
 
 
