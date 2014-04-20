@@ -16,9 +16,13 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         ProtocolStack stack = new ProtocolStack(ApplicationLayer.class, DataLinkLayer.class, ComPort.class);
 
-        Parent root = FXMLLoader.load(Main.class.getResource("/gui/templates/chat.fxml"));
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/gui/templates/chat.fxml"));
+        Parent root = loader.load();
         primaryStage.setTitle("ComChat v0.1 alpha");
         primaryStage.setScene(new Scene(root, 600, 400));
+
+        DataController controller = loader.getController();
+        controller.initWithData(primaryStage, stack);
         primaryStage.show();
     }
 

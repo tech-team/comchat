@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="comchat:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/comchat_jar</output-path>
+    <root id="archive" name="comchat.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/resources/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="comchat" />
+      <element id="library" level="project" name="RXTXcomm" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/RXTXcomm.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/controlsfx-8.0.5.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

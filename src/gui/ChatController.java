@@ -7,12 +7,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import layers.ProtocolStack;
 import org.controlsfx.dialog.Dialogs;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -31,14 +33,19 @@ public class ChatController extends DataController {
     @Override
     public void initWithData(Stage stage, Object data) {
         super.initWithData(stage, data);
-
         protocolStack = (ProtocolStack) data;
+
+        WebEngine engine = webView.getEngine();
+        engine.loadContent(getHtmlPage());
     }
 
     public void sendClick(ActionEvent actionEvent) {
-        Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
-        Element div = webView.getEngine().getDocument().createElement("div");
-        Text text = webView.getEngine().getDocument().createTextNode("ололо");
+        WebEngine engine = webView.getEngine();
+        Document document = engine.getDocument();
+
+        Node body = document.getElementsByTagName("body").item(0);
+        Element div = engine.getDocument().createElement("div");
+        Text text = engine.getDocument().createTextNode("ололо");
 
         Element b = webView.getEngine().getDocument().createElement("b");
         b.setTextContent("Вася: ");
@@ -83,5 +90,16 @@ public class ChatController extends DataController {
                 .message("Connection cancelled")
                 .showInformation();
         }
+    }
+
+    private String getHtmlPage() {
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>");
+        html.append("<html>");
+        html.append("<body>");
+        html.append("</body>");
+        html.append("</html>");
+
+        return html.toString();
     }
 }
