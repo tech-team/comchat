@@ -2,18 +2,12 @@ package layers.dll;
 
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
-import layers.phy.settings.ComPortSettings;
 import layers.phy.IPhysicalLayer;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Consumer;
+import layers.phy.settings.ComPortSettings;
 
 public class DataLinkLayer implements IDataLinkLayer {
     IApplicationLayer apl;
     IPhysicalLayer phy;
-
-    private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
 
     @Override
     public void connect(ComPortSettings settings) {
@@ -29,17 +23,6 @@ public class DataLinkLayer implements IDataLinkLayer {
     public void receive(byte[] data) {
 
     }
-
-    @Override
-    public void subscribeConnectionStatusChanged(Consumer<Boolean> listener) {
-        connectionChangedListeners.add(listener);
-    }
-
-    @Override
-    public void notifyConnectionChanged(boolean status) {
-        connectionChangedListeners.forEach(listener -> listener.accept(status));
-    }
-
 
     @Override
     public IApplicationLayer getUpperLayer() {
