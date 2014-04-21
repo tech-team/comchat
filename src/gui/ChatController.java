@@ -160,4 +160,13 @@ public class ChatController extends DataController {
 
         return html.toString();
     }
+
+    public void onMenuAbout(ActionEvent event) {
+        Dialogs.create()
+                .owner(stage)
+                .title("ComChat")
+                .masthead("About")
+                .message("BMSTU course project.\nCOM-port based chat for 2 persons.\n\nAuthors:\nLeontiev Aleksey - Application Layer and GUI\nLatkin Igor - Physical Layer\nKornukov Nikita - Data Link Layer\n\nProject's home:\nhttps://github.com/tech-team/comchat")
+                .showInformation();
+    }
 }
