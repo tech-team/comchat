@@ -40,7 +40,8 @@ public class ApplicationLayer implements IApplicationLayer {
 
     @Override
     public void send(Message.Type type, String msg) throws SerializationException, IOException {
-        dll.send(new Message(type, msg).serialize());
+//        dll.send(new Message(type, msg).serialize());
+        dll.send(msg.getBytes());
     }
 
     @Override
