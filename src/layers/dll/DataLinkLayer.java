@@ -1,9 +1,12 @@
 package layers.dll;
 
 import layers.ILayer;
+import layers.SerializationException;
 import layers.apl.IApplicationLayer;
 import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
+
+import java.io.IOException;
 
 public class DataLinkLayer implements IDataLinkLayer {
     private IApplicationLayer apl;
@@ -15,13 +18,14 @@ public class DataLinkLayer implements IDataLinkLayer {
     }
 
     @Override
-    public void send(byte[] msg) {
-
+    public void send(byte[] msg) throws IOException {
+        //TODO
+        phy.send(msg);
     }
 
     @Override
-    public void receive(byte[] data) {
-
+    public void receive(byte[] data) throws SerializationException {
+        apl.receive(data);
     }
 
     @Override

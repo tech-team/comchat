@@ -15,6 +15,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import layers.ProtocolStack;
+import layers.SerializationException;
+import layers.apl.Message;
 import org.controlsfx.dialog.Dialogs;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,12 +58,14 @@ public class ChatController extends DataController {
     }
 
     public void sendClick(ActionEvent actionEvent) {
+        String message = inputField.getText();
+
         WebEngine engine = webView.getEngine();
         Document document = engine.getDocument();
 
         Node body = document.getElementsByTagName("body").item(0);
         Element div = engine.getDocument().createElement("div");
-        Text text = engine.getDocument().createTextNode("ололо");
+        Text text = engine.getDocument().createTextNode(message);
 
         Element b = webView.getEngine().getDocument().createElement("b");
         b.setTextContent("Вася: ");
@@ -70,6 +74,13 @@ public class ChatController extends DataController {
         div.appendChild(text);
 
         body.appendChild(div);
+
+        //send
+        try {
+            protocolStack.getApl().send(Message.Type.Msg, message);
+        } catch (SerializationException | IOException e) {
+            e.printStackTrace();
+        }
 
         inputField.clear();
     }

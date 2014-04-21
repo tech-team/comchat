@@ -213,7 +213,7 @@ public class ComPort implements IPhysicalLayer {
     }
 
     @Override
-    public void write(byte[] data) throws IOException {
+    public void send(byte[] data) throws IOException {
         System.out.println("ready? - " + readyToSend());
 //        if (readyToSend()) {
             serialPort.setRTS(true);
@@ -275,7 +275,7 @@ public class ComPort implements IPhysicalLayer {
         comPort.connect(new ComPortSettings(port, 9600, 8, 1, 0));
 
         while (comPort.isConnected()) {
-            comPort.write("Hello, com3 port".getBytes());
+            comPort.send("Hello, com3 port".getBytes());
 //            layer.read();
             Thread.sleep(2000);
 
