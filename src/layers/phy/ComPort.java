@@ -227,6 +227,7 @@ public class ComPort implements IPhysicalLayer {
 
     @Override
     public boolean readyToSend() {
+        System.out.println(serialPort.isCTS() + " " + serialPort.isDSR());
         return serialPort.isCTS() && serialPort.isDSR();
     }
 
@@ -292,10 +293,10 @@ public class ComPort implements IPhysicalLayer {
         for (String arg : args) {
             switch (arg) {
                 case "reader":
-                    reader(comPort, "COM3");
+                    reader(comPort, "COM5");
                     break;
                 case "writer":
-                    writer(comPort, "COM4");
+                    writer(comPort, "COM6");
                     break;
             }
         }
