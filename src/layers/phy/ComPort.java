@@ -32,6 +32,7 @@ public class ComPort implements IPhysicalLayer {
     private static final int TIME_OUT = 2000;
 
     private IDataLinkLayer dataLinkLayer;
+    private SerialEventListener eventListener;
 
     private SerialPort serialPort;
     private OutputStream outStream;
@@ -163,7 +164,7 @@ public class ComPort implements IPhysicalLayer {
         }
 
         try {
-            SerialEventListener eventListener = new SerialEventListener(inStream, outStream);
+            eventListener = new SerialEventListener(inStream, outStream);
             serialPort.addEventListener(eventListener);
             serialPort.notifyOnDataAvailable(true);
 //            serialPort.notifyOnOutputEmpty(true);
@@ -217,7 +218,9 @@ public class ComPort implements IPhysicalLayer {
 //        if (readyToSend()) {
             serialPort.setRTS(true);
             outStream.write(data);
-            outStream.flush();
+            try {
+                outStream.flush();
+            } catch (IOException ignored) { }
 //        }
 
     }
