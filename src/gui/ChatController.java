@@ -7,6 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.web.WebEngine;
@@ -77,6 +79,10 @@ public class ChatController extends DataController {
     }
 
     public void sendClick(ActionEvent actionEvent) {
+        send();
+    }
+
+    private void send() {
         String message = inputField.getText();
 
         WebEngine engine = webView.getEngine();
@@ -165,5 +171,19 @@ public class ChatController extends DataController {
                 .masthead("About")
                 .message("BMSTU course project.\nCOM-port based chat for 2 persons.\n\nAuthors:\nLeontiev Aleksey - Application Layer and GUI\nLatkin Igor - Physical Layer\nKornukov Nikita - Data Link Layer\n\nProject's home:\nhttps://github.com/tech-team/comchat")
                 .showInformation();
+    }
+
+    public void onKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER && !event.isControlDown()) {
+            if (status == Status.Connected)
+                send();
+            else
+                Dialogs.create()
+                        .owner(stage)
+                        .title("ComChat")
+                        .masthead("Error")
+                        .message("You should connect first.\nUse Connection -> Connect.")
+                        .showError();
+        }
     }
 }
