@@ -1,13 +1,14 @@
 package gui;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.web.WebEngine;
@@ -15,7 +16,6 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 import layers.ProtocolStack;
 import layers.SerializationException;
 import layers.apl.Message;
@@ -54,22 +54,20 @@ public class ChatController extends DataController {
 
         protocolStack.getPhy().subscribeConnectionStatusChanged(this::updateStatus);
 
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            public void handle(WindowEvent e) {
-                Action action = Dialogs.create()
-                                    .owner(stage)
-                                    .title("ComChat")
-                                    .masthead("Confirmation")
-                                    .message("Do you really want to exit?")
-                                    .showConfirm();
+        stage.setOnCloseRequest(e -> {
+            Action action = Dialogs.create()
+                                .owner(stage)
+                                .title("ComChat")
+                                .masthead("Confirmation")
+                                .message("Do you really want to exit?")
+                                .showConfirm();
 
-                if (action == Dialog.Actions.YES) {
-                    if (status == Status.Connected)
-                        protocolStack.getPhy().disconnect();
-                }
-                else
-                    e.consume();
+            if (action == Dialog.Actions.YES) {
+                if (status == Status.Connected)
+                    protocolStack.getPhy().disconnect();
             }
+            else
+                e.consume();
         });
     }
 
@@ -77,9 +75,14 @@ public class ChatController extends DataController {
         status = Status.fromBoolean(connected);
         statusIcon.setFill(status.toColor());
         statusText.setText(status.toString());
+        sendButton.setDisable(!connected);
     }
 
     public void sendClick(ActionEvent actionEvent) {
+        send();
+    }
+
+    private void send() {
         String message = inputField.getText();
 
         WebEngine engine = webView.getEngine();
@@ -168,5 +171,19 @@ public class ChatController extends DataController {
                 .masthead("About")
                 .message("BMSTU course project.\nCOM-port based chat for 2 persons.\n\nAuthors:\nLeontiev Aleksey - Application Layer and GUI\nLatkin Igor - Physical Layer\nKornukov Nikita - Data Link Layer\n\nProject's home:\nhttps://github.com/tech-team/comchat")
                 .showInformation();
+    }
+
+    public void onKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER && !event.isControlDown()) {
+            if (status == Status.Connected)
+                send();
+            else
+                Dialogs.create()
+                        .owner(stage)
+                        .title("ComChat")
+                        .masthead("Error")
+                        .message("You should connect first.\nUse Connection -> Connect.")
+                        .showError();
+        }
     }
 }

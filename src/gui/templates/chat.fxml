@@ -36,7 +36,7 @@
         </AnchorPane>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
           <children>
-            <TextArea fx:id="inputField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="133.0" prefWidth="481.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <TextArea fx:id="inputField" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onKeyReleased="#onKeyReleased" prefHeight="133.0" prefWidth="481.0" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
           </children>
         </AnchorPane>
       </items>
@@ -51,7 +51,7 @@
         </ToolBar>
         <ToolBar maxHeight="1.7976931348623157E308">
           <items>
-            <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendClick" text="Send" />
+            <Button fx:id="sendButton" defaultButton="true" disable="true" mnemonicParsing="false" onAction="#sendClick" text="Send" />
           </items>
         </ToolBar>
       </children>
