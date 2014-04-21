@@ -30,7 +30,7 @@ public class ApplicationLayer implements IApplicationLayer {
 
     @Override
     public void connect(PhysicalLayerSettings settings) throws Exception {
-
+        getLowerLayer().connect(settings);
     }
 
     @Override

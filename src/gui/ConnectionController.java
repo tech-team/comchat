@@ -44,12 +44,6 @@ public class ConnectionController extends DataController {
 
     public void onConnect(ActionEvent event) {
         try {
-//            Map<String, String> settings = new HashMap<>();
-//            settings.put("port", comPort.getValue());
-//            //TODO: fill map with all the settings
-//
-//            protocolStack.getPhy().connect(settings);
-
             protocolStack.getPhy().connect(new ComPortSettings(comPort.getValue(),
                                                                baudRate.getValue(),
                                                                DataBitsEnum.fromString(dataBits.getValue()).toDataBits(),

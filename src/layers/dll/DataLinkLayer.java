@@ -11,7 +11,7 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void connect(PhysicalLayerSettings settings) throws Exception {
-        phy.connect(settings);
+        getLowerLayer().connect(settings);
     }
 
     @Override
