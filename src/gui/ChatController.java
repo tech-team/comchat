@@ -1,7 +1,6 @@
 package gui;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -15,7 +14,6 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 import layers.ProtocolStack;
 import layers.SerializationException;
 import layers.apl.Message;
@@ -54,22 +52,20 @@ public class ChatController extends DataController {
 
         protocolStack.getPhy().subscribeConnectionStatusChanged(this::updateStatus);
 
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            public void handle(WindowEvent e) {
-                Action action = Dialogs.create()
-                                    .owner(stage)
-                                    .title("ComChat")
-                                    .masthead("Confirmation")
-                                    .message("Do you really want to exit?")
-                                    .showConfirm();
+        stage.setOnCloseRequest(e -> {
+            Action action = Dialogs.create()
+                                .owner(stage)
+                                .title("ComChat")
+                                .masthead("Confirmation")
+                                .message("Do you really want to exit?")
+                                .showConfirm();
 
-                if (action == Dialog.Actions.YES) {
-                    if (status == Status.Connected)
-                        protocolStack.getPhy().disconnect();
-                }
-                else
-                    e.consume();
+            if (action == Dialog.Actions.YES) {
+                if (status == Status.Connected)
+                    protocolStack.getPhy().disconnect();
             }
+            else
+                e.consume();
         });
     }
 
@@ -77,6 +73,7 @@ public class ChatController extends DataController {
         status = Status.fromBoolean(connected);
         statusIcon.setFill(status.toColor());
         statusText.setText(status.toString());
+        sendButton.setDisable(!connected);
     }
 
     public void sendClick(ActionEvent actionEvent) {

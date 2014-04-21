@@ -51,7 +51,7 @@
         </ToolBar>
         <ToolBar maxHeight="1.7976931348623157E308">
           <items>
-            <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendClick" text="Send" />
+            <Button fx:id="sendButton" defaultButton="true" disable="true" mnemonicParsing="false" onAction="#sendClick" text="Send" />
           </items>
         </ToolBar>
       </children>
