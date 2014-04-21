@@ -17,7 +17,7 @@
         <Menu mnemonicParsing="false" text="Connection">
           <items>
             <MenuItem mnemonicParsing="false" onAction="#onMenuConnect" text="Connect" />
-            <MenuItem mnemonicParsing="false" text="Disconnect" />
+            <MenuItem mnemonicParsing="false" onAction="#onMenuDisconnect" text="Disconnect" />
           </items>
         </Menu>
         <Menu mnemonicParsing="false" text="Help">

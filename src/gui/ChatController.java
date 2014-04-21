@@ -1,6 +1,7 @@
 package gui;
 
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -14,9 +15,12 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 import layers.ProtocolStack;
 import layers.SerializationException;
 import layers.apl.Message;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,6 +53,24 @@ public class ChatController extends DataController {
         statusText.setText(Status.NotConnected.toString());
 
         protocolStack.getPhy().subscribeConnectionStatusChanged(this::updateStatus);
+
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent e) {
+                Action action = Dialogs.create()
+                                    .owner(stage)
+                                    .title("ComChat")
+                                    .masthead("Confirmation")
+                                    .message("Do you really want to exit?")
+                                    .showConfirm();
+
+                if (action == Dialog.Actions.YES) {
+                    if (status == Status.Connected)
+                        protocolStack.getPhy().disconnect();
+                }
+                else
+                    e.consume();
+            }
+        });
     }
 
     private void updateStatus(Boolean connected) {
@@ -121,6 +143,11 @@ public class ChatController extends DataController {
                 .message("Connection cancelled")
                 .showInformation();
         }
+    }
+
+    public void onMenuDisconnect(ActionEvent event) {
+        if (status == Status.Connected)
+            protocolStack.getPhy().disconnect();
     }
 
     private String getHtmlPage() {

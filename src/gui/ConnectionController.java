@@ -53,12 +53,15 @@ public class ConnectionController extends DataController {
             this.close();
         }
         catch(Exception e) {
+            String message = "Unable to connect with these settings";
+            Exception withMessage = new Exception(message, e);
+
             Dialogs.create()
                 .owner(stage)
                 .title("ComChat")
                 .masthead("Error")
-                .message("Unable to connect with these settings")
-                .showInformation();
+                .message(message) //well, that has no effect for exception dialog unfortunately
+                .showException(withMessage);
         }
     }
 }
