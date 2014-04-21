@@ -2,6 +2,8 @@ package layers.phy;
 
 import gnu.io.*;
 import layers.ILayer;
+import layers.ProtocolStack;
+import layers.apl.ApplicationLayer;
 import layers.dll.DataLinkLayer;
 import layers.dll.IDataLinkLayer;
 import layers.phy.settings.PhysicalLayerSettings;
@@ -167,8 +169,8 @@ public class ComPort implements IPhysicalLayer {
 //            serialPort.notifyOnOutputEmpty(true);
 //            serialPort.notifyOnBreakInterrupt(true);
 //            serialPort.notifyOnCarrierDetect(true);
-//            serialPort.notifyOnCTS(true);
-//            serialPort.notifyOnDSR(true);
+            serialPort.notifyOnCTS(true);
+            serialPort.notifyOnDSR(true);
 //            serialPort.notifyOnFramingError(true);
 //            serialPort.notifyOnOverrunError(true);
 //            serialPort.notifyOnParityError(true);
@@ -178,9 +180,9 @@ public class ComPort implements IPhysicalLayer {
             disconnect();
         }
 
-        setConnected(true);
         serialPort.setDTR(true);
         serialPort.setRTS(true);
+        setConnected(true);
     }
 
     @Override
@@ -191,6 +193,9 @@ public class ComPort implements IPhysicalLayer {
                 inStream.close();
             } catch (IOException ignored) {
             }
+
+            serialPort.setRTS(false);
+            serialPort.setDTR(false);
 
             serialPort.close();
 
@@ -208,8 +213,18 @@ public class ComPort implements IPhysicalLayer {
 
     @Override
     public void write(byte[] data) throws IOException {
-        serialPort.setRTS(true);
-        outStream.write(data);
+        System.out.println("ready? - " + readyToSend());
+//        if (readyToSend()) {
+            serialPort.setRTS(true);
+            outStream.write(data);
+            outStream.flush();
+//        }
+
+    }
+
+    @Override
+    public boolean readyToSend() {
+        return serialPort.isCTS() && serialPort.isDSR();
     }
 
     @Override
@@ -249,30 +264,38 @@ public class ComPort implements IPhysicalLayer {
 
 
 
+    private static void reader(IPhysicalLayer comPort, String port) throws Exception {
+        comPort.connect(new ComPortSettings(port, 9600, 8, 1, 0));
+    }
+
+    private static void writer(IPhysicalLayer comPort, String port) throws Exception {
+        comPort.connect(new ComPortSettings(port, 9600, 8, 1, 0));
+
+        while (comPort.isConnected()) {
+            comPort.write("Hello, com3 port".getBytes());
+//            layer.read();
+            Thread.sleep(2000);
+
+        }
+    }
+
 
     public static void main(String[] args) throws Exception {
-        //TODO: replace with ProtocolStack
-        IDataLinkLayer dll = new DataLinkLayer();
-        IPhysicalLayer layer = new ComPort();
-        layer.setUpperLayer(dll);
+        ProtocolStack stack = new ProtocolStack(ApplicationLayer.class, DataLinkLayer.class, ComPort.class);
+        IPhysicalLayer comPort = stack.getPhy();
 
         ComPort.getAvailablePorts().forEach(System.out::println);
 
-        String port = "COM3";
-//        String port = "/dev/ttyS1300";
-        //TODO: sorry once again
-        //Setting should be Map, so it can be passed through abstract interface's connect method
-//        Map<String, String> settings = new HashMap<>();
-//        settings.put("port", port);
-//        layer.connect(settings);
-        //layer.connect(new ComPortSettings(port, 9600, 8, 1, 0));
-
-//        while (layer.isConnected()) {
-//            layer.write("Hello, com port".getBytes());
-////            layer.read();
-//            Thread.sleep(1000);
-//
-//        }
+        for (String arg : args) {
+            switch (arg) {
+                case "reader":
+                    reader(comPort, "COM3");
+                    break;
+                case "writer":
+                    writer(comPort, "COM4");
+                    break;
+            }
+        }
 
         Thread t = new Thread() {
             public void run() {

@@ -25,46 +25,46 @@ public class SerialEventListener implements SerialPortEventListener {
                 break;
 
             case SerialPortEvent.DATA_AVAILABLE:
-                System.out.println("data available");
+                System.out.println("DATA_AVAILABLE");
                 dataAvailable(event);
                 break;
 
             case SerialPortEvent.BI:
-                System.out.println("bi");
+                System.out.println("BI");
 //                breakInterrupt(event);
                 break;
 
             case SerialPortEvent.CD:
-                System.out.println("cd");
+                System.out.println("CD");
 //                carrierDetect(event);
                 break;
 
             case SerialPortEvent.CTS:
-                System.out.println("cts");
+                System.out.println("CTS");
 //                clearToSend(event);
                 break;
 
             case SerialPortEvent.DSR:
-                System.out.println("dsr");
+                System.out.println("DSR");
 //                dataSetReady(event);
                 break;
 
             case SerialPortEvent.FE:
-                System.out.println("fe");
+                System.out.println("FE");
 //                framingError(event);
                 break;
 
             case SerialPortEvent.OE:
-                System.out.println("oe");
+                System.out.println("OE");
 //                overrunError(event);
                 break;
 
             case SerialPortEvent.PE:
-                System.out.println("pe");
+                System.out.println("PE");
 //                parityError(event);
                 break;
             case SerialPortEvent.RI:
-                System.out.println("ri");
+                System.out.println("RI");
 //                ringIndicator(event);
                 break;
         }
