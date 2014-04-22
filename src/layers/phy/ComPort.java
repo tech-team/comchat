@@ -181,8 +181,8 @@ public class ComPort implements IPhysicalLayer {
             disconnect();
         }
 
-        serialPort.setDTR(true);
         serialPort.setRTS(true);
+        serialPort.setDTR(true);
         setConnected(true);
     }
 
@@ -214,6 +214,7 @@ public class ComPort implements IPhysicalLayer {
 
     @Override
     public void send(byte[] data) throws IOException {
+        serialPort.setDTR(true);
         System.out.println("ready? - " + readyToSend());
 //        if (readyToSend()) {
             serialPort.setRTS(true);
@@ -227,7 +228,6 @@ public class ComPort implements IPhysicalLayer {
 
     @Override
     public boolean readyToSend() {
-        System.out.println(serialPort.isCTS() + " " + serialPort.isDSR());
         return serialPort.isCTS() && serialPort.isDSR();
     }
 
