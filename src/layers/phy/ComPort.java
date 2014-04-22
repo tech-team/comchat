@@ -15,17 +15,14 @@ import layers.phy.settings.comport_settings.StopBitsEnum;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TooManyListenersException;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
-public class ComPort implements IPhysicalLayer {
+public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     private static Logger LOGGER = Logger.getLogger("PhysicalLayerLogger");
     private static List<String> availablePorts;
     private static final String PORT_NAME = "ChatPort";
@@ -164,8 +161,7 @@ public class ComPort implements IPhysicalLayer {
         }
 
         try {
-            eventListener = new SerialEventListener(inStream, outStream);
-            serialPort.addEventListener(eventListener);
+            serialPort.addEventListener(this);
             serialPort.notifyOnDataAvailable(true);
 //            serialPort.notifyOnOutputEmpty(true);
 //            serialPort.notifyOnBreakInterrupt(true);
@@ -214,16 +210,14 @@ public class ComPort implements IPhysicalLayer {
 
     @Override
     public void send(byte[] data) throws IOException {
-        serialPort.setDTR(true);
+//        serialPort.setDTR(true);
         System.out.println("ready? - " + readyToSend());
-//        if (readyToSend()) {
-            serialPort.setRTS(true);
-            outStream.write(data);
-            try {
-                outStream.flush();
-            } catch (IOException ignored) { }
-//        }
-
+        serialPort.setRTS(false);
+        outStream.write(data);
+        try {
+            outStream.flush();
+        } catch (IOException ignored) { }
+        serialPort.setRTS(true);
     }
 
     @Override
@@ -261,6 +255,83 @@ public class ComPort implements IPhysicalLayer {
     }
 
 
+    @Override
+    public synchronized void serialEvent(SerialPortEvent event) {
+        switch (event.getEventType()) {
+            case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
+                System.out.println("OUTPUT_BUFFER_EMPTY");
+//                outputBufferEmpty(event);
+                break;
+
+            case SerialPortEvent.DATA_AVAILABLE:
+                System.out.println("DATA_AVAILABLE");
+                dataAvailable(event);
+                break;
+
+            case SerialPortEvent.BI:
+                System.out.println("BI");
+//                breakInterrupt(event);
+                break;
+
+            case SerialPortEvent.CD:
+                System.out.println("CD");
+//                carrierDetect(event);
+                break;
+
+            case SerialPortEvent.CTS:
+                System.out.println("CTS");
+//                clearToSend(event);
+                break;
+
+            case SerialPortEvent.DSR:
+                System.out.println("DSR");
+//                dataSetReady(event);
+                break;
+
+            case SerialPortEvent.FE:
+                System.out.println("FE");
+//                framingError(event);
+                break;
+
+            case SerialPortEvent.OE:
+                System.out.println("OE");
+//                overrunError(event);
+                break;
+
+            case SerialPortEvent.PE:
+                System.out.println("PE");
+//                parityError(event);
+                break;
+            case SerialPortEvent.RI:
+                System.out.println("RI");
+//                ringIndicator(event);
+                break;
+        }
+    }
+
+    public void dataAvailable(SerialPortEvent event) {
+/*
+        // reading size of the data
+        byte[] dataSize = new byte[2];
+        for (int i = 0; i < dataSize.length; ++i) {
+            dataSize[i] = (byte) inStream.read();
+        }
+
+        // reading the whole data
+        short size = ByteBuffer.wrap(dataSize).getShort();
+        byte[] data = new byte[size];
+        for (int i = 0; i < size; ++i) {
+            data[i] = (byte) inStream.read();
+        }
+
+        getUpperLayer().receive(data);
+
+*/
+
+        Scanner scanner = new Scanner(inStream);
+        String line = scanner.nextLine();
+        System.out.println(line);
+    }
 
 
 
