@@ -13,6 +13,10 @@ public class DataStage extends Stage {
         return controller.getResult();
     }
 
+    public Object getResultData() {
+        return controller.getResultData();
+    }
+
     public DataController getController() {
         return controller;
     }

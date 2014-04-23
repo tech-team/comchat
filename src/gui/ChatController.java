@@ -27,6 +27,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 
@@ -39,11 +40,14 @@ public class ChatController extends DataController {
     public Circle statusIcon;
     public Label statusText;
 
+    public static final String PROGRAM_NAME = "ComChat";
+    public static final String PROGRAM_VERSION = "v0.1 alpha";
+
     private ProtocolStack protocolStack;
     private Status status;
 
-    private String localUser = "Вася";
-    private String remoteUser = "Петя";
+    private String localUser = "undefined";
+    private String remoteUser = "undefined";
 
     @Override
     public void initWithData(Stage stage, Object data) {
@@ -61,7 +65,7 @@ public class ChatController extends DataController {
         stage.setOnCloseRequest(e -> {
             Action action = Dialogs.create()
                     .owner(stage)
-                    .title("ComChat")
+                    .title(PROGRAM_NAME)
                     .masthead("Confirmation")
                     .message("Do you really want to exit?")
                     .showConfirm();
@@ -74,6 +78,8 @@ public class ChatController extends DataController {
         });
 
         protocolStack.getApl().subscribeToReceive(this::receive);
+
+        showConnectionDialog();
     }
 
     private void updateStatus(Boolean connected) {
@@ -134,10 +140,33 @@ public class ChatController extends DataController {
     private void receive(Message message) {
         //JavaFX UI thread synchronization
         Platform.runLater(() -> {
-            if (message.getType() == Message.Type.Msg)
-                addUserMessage(remoteUser, message.getMsg());
-            else //TODO: should react differently on different message types
-                addSystemMessage(MessageLevel.Info, message.getType().name());//Update UI here
+            addSystemMessage(MessageLevel.Debug, "Message received: " + message.getType().name());
+
+            switch (message.getType()) {
+                case Msg:
+                    addUserMessage(remoteUser, message.getMsg());
+                    break;
+                case Auth:
+                    remoteUser = message.getMsg();
+                    addSystemMessage(MessageLevel.Info, "Remote user connected: " + message.getMsg());
+                    //TODO: enable "sendability"
+                    break;
+                case Ack:
+                    //TODO: is it necessary?
+                    break;
+                case Term:
+                    addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
+                    //TODO: send Term
+                    break;
+                case TermAck:
+                    //TODO: interface though all the layers?
+                    addSystemMessage(MessageLevel.Info, "Termination confirmed");
+                    protocolStack.getPhy().disconnect();
+                    addSystemMessage(MessageLevel.Info, "Disconnected");
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         });
     }
 
@@ -146,40 +175,48 @@ public class ChatController extends DataController {
     }
 
     public void onMenuConnect(ActionEvent actionEvent) throws IOException {
-        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/gui/templates/connection.fxml"));
+        showConnectionDialog();
+    }
 
-        Parent root = (Parent) loader.load();
+    private void showConnectionDialog() {
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/gui/templates/connection.fxml"));
 
-        connectionStage = new DataStage((DataController) loader.getController(), protocolStack);
+            Parent root = (Parent) loader.load();
 
-        connectionStage.setTitle("Connection");
-        Scene conScene = new Scene(root);
-        conScene.getStylesheets().add("/gui/css/connection.css");
-        connectionStage.setScene(conScene);
-        connectionStage.setResizable(false);
-        connectionStage.initModality(Modality.WINDOW_MODAL);
-        connectionStage.initOwner(layout.getScene().getWindow());
-        connectionStage.initStyle(StageStyle.UTILITY);
-        connectionStage.showAndWait();
+            connectionStage = new DataStage((DataController) loader.getController(), protocolStack);
 
-        if (connectionStage.getResult() == DialogResult.OK) {
-            Dialogs.create()
-                .owner(stage)
-                .title("ComChat")
-                .masthead("Information")
-                .message("Successfully connected")
-                .showInformation();
+            connectionStage.setTitle("Connection");
+            Scene conScene = new Scene(root);
+            conScene.getStylesheets().add("/gui/css/connection.css");
+            connectionStage.setScene(conScene);
+            connectionStage.setResizable(false);
+            connectionStage.initModality(Modality.WINDOW_MODAL);
+            connectionStage.initOwner(layout.getScene().getWindow());
+            connectionStage.initStyle(StageStyle.UTILITY);
+            connectionStage.showAndWait();
 
-            statusIcon.setFill(Status.Connected.toColor());
-            statusText.setText(Status.Connected.toString());
+            if (connectionStage.getResult() == DialogResult.OK) {
+                addSystemMessage(MessageLevel.Info, "Successfully connected");
+                localUser = (String) getResultData();
+
+                statusIcon.setFill(Status.Connected.toColor());
+                statusText.setText(Status.Connected.toString());
+            } else {
+                Dialogs.create()
+                        .owner(stage)
+                        .title(PROGRAM_NAME)
+                        .masthead("Information")
+                        .message("Connection cancelled")
+                        .showInformation();
+            }
         }
-        else {
+        catch (IOException e) {
             Dialogs.create()
-                .owner(stage)
-                .title("ComChat")
-                .masthead("Information")
-                .message("Connection cancelled")
-                .showInformation();
+                    .owner(stage)
+                    .title(PROGRAM_NAME)
+                    .masthead("Error")
+                    .showException(e);
         }
     }
 
@@ -195,7 +232,7 @@ public class ChatController extends DataController {
     public void onMenuAbout(ActionEvent event) {
         Dialogs.create()
                 .owner(stage)
-                .title("ComChat")
+                .title(PROGRAM_NAME)
                 .masthead("About")
                 .message("BMSTU course project.\nCOM-port based chat for 2 persons.\n\nAuthors:\nLeontiev Aleksey - Application Layer and GUI\nLatkin Igor - Physical Layer\nKornukov Nikita - Data Link Layer\n\nProject's home:\nhttps://github.com/tech-team/comchat")
                 .showInformation();
@@ -208,7 +245,7 @@ public class ChatController extends DataController {
             else
                 Dialogs.create()
                         .owner(stage)
-                        .title("ComChat")
+                        .title(PROGRAM_NAME)
                         .masthead("Error")
                         .message("You should connect first.\nUse Connection -> Connect.")
                         .showError();

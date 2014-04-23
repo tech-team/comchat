@@ -3,6 +3,7 @@ package gui;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.ProtocolStack;
@@ -15,6 +16,7 @@ import org.controlsfx.dialog.Dialogs;
 
 public class ConnectionController extends DataController {
     public GridPane layout;
+    public TextField userName;
     public ComboBox<String> comPort;
     public ComboBox<Integer> baudRate;
     public ComboBox<String> dataBits;
@@ -50,6 +52,7 @@ public class ConnectionController extends DataController {
                                                                StopBitsEnum.fromString(stopBits.getValue()).toStopBits(),
                                                                ParityEnum.fromString(parityCheck.getValue()).toParity()));
             result = DialogResult.OK;
+            resultData = userName.getText();
             this.close();
         }
         catch(Exception e) {

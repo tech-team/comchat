@@ -5,6 +5,7 @@ import javafx.stage.Stage;
 
 public abstract class DataController {
     protected Object data;
+    protected Object resultData;
     protected DialogResult result = DialogResult.CLOSED;
     protected Stage stage;
 
@@ -15,6 +16,10 @@ public abstract class DataController {
 
     public DialogResult getResult() {
         return result;
+    }
+
+    public Object getResultData() {
+        return resultData;
     }
 
     public void setStage(Stage stage) {

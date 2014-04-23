@@ -1,7 +1,7 @@
 package gui;
 
 enum MessageLevel {
-    Error("red", "ERROR"), Info("gray", "INFO");
+    Error("ERROR", "red"), Info("INFO", "gray"), Debug("DEBUG", "blue");
 
     String level;
     String htmlColor;
