@@ -15,7 +15,11 @@ import layers.phy.settings.comport_settings.StopBitsEnum;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.TooManyListenersException;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -29,7 +33,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     private static final int TIME_OUT = 2000;
 
     private IDataLinkLayer dataLinkLayer;
-    private SerialEventListener eventListener;
 
     private SerialPort serialPort;
     private OutputStream outStream;
@@ -310,27 +313,29 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     public void dataAvailable(SerialPortEvent event) {
-/*
+    try {
         // reading size of the data
-        byte[] dataSize = new byte[2];
+        byte[] dataSize = new byte[4];
         for (int i = 0; i < dataSize.length; ++i) {
             dataSize[i] = (byte) inStream.read();
         }
 
         // reading the whole data
-        short size = ByteBuffer.wrap(dataSize).getShort();
+        int size = ByteBuffer.wrap(dataSize).getInt();
         byte[] data = new byte[size];
         for (int i = 0; i < size; ++i) {
             data[i] = (byte) inStream.read();
         }
 
         getUpperLayer().receive(data);
+    } catch (Exception ignored) { // TODO
 
-*/
+    }
 
-        Scanner scanner = new Scanner(inStream);
-        String line = scanner.nextLine();
-        System.out.println(line);
+        // TODO: add own exceptions
+//        Scanner scanner = new Scanner(inStream);
+//        String line = scanner.nextLine();
+//        System.out.println(line);
     }
 
 
@@ -347,7 +352,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         comPort.connect(new ComPortSettings(port, 9600, 8, 1, 0));
 
         while (comPort.isConnected()) {
-            comPort.send("Hello, com3 port".getBytes());
+            comPort.send("Привет!".getBytes());
 //            layer.read();
             Thread.sleep(2000);
 

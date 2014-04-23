@@ -1,7 +1,6 @@
 package layers.dll;
 
 import layers.ILayer;
-import layers.SerializationException;
 import layers.phy.settings.PhysicalLayerSettings;
 
 import java.io.IOException;
@@ -9,5 +8,5 @@ import java.io.IOException;
 public interface IDataLinkLayer extends ILayer {
     void connect(PhysicalLayerSettings settings) throws Exception;
     void send(byte[] msg) throws IOException;
-    void receive(byte[] data) throws SerializationException;
+    void receive(byte[] data) throws Exception;
 }

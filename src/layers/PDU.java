@@ -14,7 +14,7 @@ public abstract class PDU implements Serializable {
             throw new SerializationException(e);
         }
     }
-    public static PDU deserialize(byte[] data) throws SerializationException {
+    public static PDU deserialize(byte[] data) throws Exception {
         try {
             ByteArrayInputStream in = new ByteArrayInputStream(data);
             ObjectInputStream is = new ObjectInputStream(in);

@@ -1,7 +1,6 @@
 package layers.dll;
 
 import layers.ILayer;
-import layers.SerializationException;
 import layers.apl.IApplicationLayer;
 import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
@@ -19,13 +18,15 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void send(byte[] msg) throws IOException {
+        Frame frame = new Frame(Frame.Type.I, msg);
         //TODO
-        phy.send(msg);
+        phy.send(frame.serialize());
     }
 
     @Override
-    public void receive(byte[] data) throws SerializationException {
-        apl.receive(data);
+    public void receive(byte[] data) throws Exception {
+        Frame frame = Frame.deserialize(data);
+        apl.receive(frame.getMsg());
     }
 
     @Override

@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 public class ApplicationLayer implements IApplicationLayer {
     private IDataLinkLayer dll;
-    private List<Consumer<Message>> recievers = new LinkedList<>();
+    private List<Consumer<Message>> receivers = new LinkedList<>();
 
     @Override
     public ILayer getUpperLayer() {
@@ -40,19 +40,20 @@ public class ApplicationLayer implements IApplicationLayer {
 
     @Override
     public void send(Message.Type type, String msg) throws SerializationException, IOException {
-//        dll.send(new Message(type, msg).serialize());
-        dll.send(msg.getBytes());
+        System.out.println("Sent: " + msg);
+        dll.send(new Message(type, msg).serialize());
+//        dll.send(msg.getBytes());
     }
 
     @Override
-    public void receive(byte[] data) throws SerializationException {
-        Message message = (Message) Message.deserialize(data);
-
-        recievers.forEach(receiver -> receiver.accept(message));
+    public void receive(byte[] data) throws Exception {
+        Message message = Message.deserialize(data);
+        System.out.println("Received: " + message.getMsg());
+        receivers.forEach(receiver -> receiver.accept(message));
     }
 
     @Override
     public void subscribeToReceive(final Consumer<Message> receiver) {
-        recievers.add(receiver);
+        receivers.add(receiver);
     }
 }
