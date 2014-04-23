@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -22,6 +23,7 @@ import layers.apl.Message;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -82,11 +84,13 @@ public class ChatController extends DataController {
     }
 
     private void addUserMessage(String author, String message) {
-        Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
-        Element div = webView.getEngine().getDocument().createElement("div");
-        Text text = webView.getEngine().getDocument().createTextNode(message);
+        WebEngine engine = webView.getEngine();
+        Document document = engine.getDocument();
+        Node body = document.getElementsByTagName("BODY").item(0);
+        Element div = document.createElement("div");
+        Text text = document.createTextNode(message);
 
-        Element b = webView.getEngine().getDocument().createElement("b");
+        Element b = document.createElement("b");
         b.setTextContent(author + ": ");
 
         div.appendChild(b);
@@ -96,13 +100,16 @@ public class ChatController extends DataController {
     }
 
     private void addSystemMessage(MessageLevel level, String message) {
-        Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
-        Element div = webView.getEngine().getDocument().createElement("div");
+        WebEngine engine = webView.getEngine();
+        Document document = engine.getDocument();
+
+        Node body = document.getElementsByTagName("BODY").item(0);
+        Element div = document.createElement("div");
         div.setAttribute("style", "color: " + level.toHtmlColor());
 
-        Text text = webView.getEngine().getDocument().createTextNode(message);
+        Text text = document.createTextNode(message);
 
-        Element b = webView.getEngine().getDocument().createElement("b");
+        Element b = document.createElement("b");
         b.setTextContent("[" + level.toString() + "]" + " System message: ");
 
         div.appendChild(b);
@@ -125,10 +132,13 @@ public class ChatController extends DataController {
     }
 
     private void receive(Message message) {
-        if (message.getType() == Message.Type.Msg)
-            addUserMessage(remoteUser, message.getMsg());
-        else //TODO: should react differently on different message types
-            addSystemMessage(MessageLevel.Info, message.getType().name());
+        //JavaFX UI thread synchronization
+        Platform.runLater(() -> {
+            if (message.getType() == Message.Type.Msg)
+                addUserMessage(remoteUser, message.getMsg());
+            else //TODO: should react differently on different message types
+                addSystemMessage(MessageLevel.Info, message.getType().name());//Update UI here
+        });
     }
 
     public void sendClick(ActionEvent event) {
@@ -179,14 +189,7 @@ public class ChatController extends DataController {
     }
 
     private String getHtmlPage() {
-        StringBuilder html = new StringBuilder();
-        html.append("<!DOCTYPE html>");
-        html.append("<html>");
-        html.append("<body>");
-        html.append("</body>");
-        html.append("</html>");
-
-        return html.toString();
+        return "<html><head></head><body></body></html>";
     }
 
     public void onMenuAbout(ActionEvent event) {
