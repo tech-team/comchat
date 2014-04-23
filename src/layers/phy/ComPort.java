@@ -313,24 +313,24 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     public void dataAvailable(SerialPortEvent event) {
-    try {
         // reading size of the data
-        byte[] dataSize = new byte[4];
-        for (int i = 0; i < dataSize.length; ++i) {
-            dataSize[i] = (byte) inStream.read();
+        try {
+            byte[] dataSize = new byte[4];
+            for (int i = 0; i < dataSize.length; ++i) {
+                dataSize[i] = (byte) inStream.read();
+            }
+
+            // reading the whole data
+            int size = ByteBuffer.wrap(dataSize).getInt();
+            byte[] data = new byte[size];
+            for (int i = 0; i < size; ++i) {
+                data[i] = (byte) inStream.read();
+            }
+
+            getUpperLayer().receive(data);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        // reading the whole data
-        int size = ByteBuffer.wrap(dataSize).getInt();
-        byte[] data = new byte[size];
-        for (int i = 0; i < size; ++i) {
-            data[i] = (byte) inStream.read();
-        }
-
-        getUpperLayer().receive(data);
-    } catch (Exception ignored) { // TODO
-
-    }
 
         // TODO: add own exceptions
 //        Scanner scanner = new Scanner(inStream);

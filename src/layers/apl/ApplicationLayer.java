@@ -46,7 +46,7 @@ public class ApplicationLayer implements IApplicationLayer {
     }
 
     @Override
-    public void receive(byte[] data) throws Exception {
+    public void receive(byte[] data) {
         Message message = Message.deserialize(data);
         System.out.println("Received: " + message.getMsg());
         receivers.forEach(receiver -> receiver.accept(message));
