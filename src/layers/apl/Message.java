@@ -47,12 +47,21 @@ public class Message extends PDU {
         return ArrayUtils.concatenate(typeByte, msgBytes);
     }
 
-    public static Message deserialize(byte[] data) throws Exception {
+    public static Message deserialize(byte[] data)  {
         byte typeByte = data[0];
         byte[] msgBytes = Arrays.copyOfRange(data, 1, data.length);
 
-        Type type = Type.fromInteger((int) typeByte);
-        String msg = new String(msgBytes, "UTF-8");
+        Type type = null;
+        try {
+            type = Type.fromInteger((int) typeByte);
+        } catch (Exception e) {
+            e.printStackTrace(); // TODO: review
+        }
+        String msg = null;
+        try {
+            msg = new String(msgBytes, "UTF-8");
+        } catch (UnsupportedEncodingException ignored) { }
+
         return new Message(type, msg);
     }
 }

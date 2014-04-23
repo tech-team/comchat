@@ -69,9 +69,14 @@ public class Frame extends PDU {
         return ArrayUtils.concatenate(size, frame);
     }
 
-    public static Frame deserialize(byte[] data) throws Exception {
+    public static Frame deserialize(byte[] data) {
         byte typeByte = data[0];
-        Type type = Type.fromInteger(typeByte);
+        Type type = null;
+        try {
+            type = Type.fromInteger(typeByte);
+        } catch (Exception e) {
+            e.printStackTrace(); // TODO: review
+        }
 
         byte supervisorInfoByte = data[1];
         byte mask = 0x01;

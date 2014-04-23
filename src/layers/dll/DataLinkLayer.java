@@ -24,7 +24,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     }
 
     @Override
-    public void receive(byte[] data) throws Exception {
+    public void receive(byte[] data) {
         Frame frame = Frame.deserialize(data);
         apl.receive(frame.getMsg());
     }
