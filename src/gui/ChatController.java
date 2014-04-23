@@ -22,7 +22,6 @@ import layers.apl.Message;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -41,6 +40,9 @@ public class ChatController extends DataController {
     private ProtocolStack protocolStack;
     private Status status;
 
+    private String localUser = "Вася";
+    private String remoteUser = "Петя";
+
     @Override
     public void initWithData(Stage stage, Object data) {
         super.initWithData(stage, data);
@@ -56,19 +58,20 @@ public class ChatController extends DataController {
 
         stage.setOnCloseRequest(e -> {
             Action action = Dialogs.create()
-                                .owner(stage)
-                                .title("ComChat")
-                                .masthead("Confirmation")
-                                .message("Do you really want to exit?")
-                                .showConfirm();
+                    .owner(stage)
+                    .title("ComChat")
+                    .masthead("Confirmation")
+                    .message("Do you really want to exit?")
+                    .showConfirm();
 
             if (action == Dialog.Actions.YES) {
                 if (status == Status.Connected)
                     protocolStack.getPhy().disconnect();
-            }
-            else
+            } else
                 e.consume();
         });
+
+        protocolStack.getApl().subscribeToReceive(this::receive);
     }
 
     private void updateStatus(Boolean connected) {
@@ -78,36 +81,58 @@ public class ChatController extends DataController {
         sendButton.setDisable(!connected);
     }
 
-    public void sendClick(ActionEvent actionEvent) {
-        send();
-    }
-
-    private void send() {
-        String message = inputField.getText();
-
-        WebEngine engine = webView.getEngine();
-        Document document = engine.getDocument();
-
-        Node body = document.getElementsByTagName("body").item(0);
-        Element div = engine.getDocument().createElement("div");
-        Text text = engine.getDocument().createTextNode(message);
+    private void addUserMessage(String author, String message) {
+        Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
+        Element div = webView.getEngine().getDocument().createElement("div");
+        Text text = webView.getEngine().getDocument().createTextNode(message);
 
         Element b = webView.getEngine().getDocument().createElement("b");
-        b.setTextContent("Вася: ");
+        b.setTextContent(author + ": ");
 
         div.appendChild(b);
         div.appendChild(text);
 
         body.appendChild(div);
+    }
 
-        //send
+    private void addSystemMessage(MessageLevel level, String message) {
+        Node body = webView.getEngine().getDocument().getElementsByTagName("body").item(0);
+        Element div = webView.getEngine().getDocument().createElement("div");
+        div.setAttribute("style", "color: " + level.toHtmlColor());
+
+        Text text = webView.getEngine().getDocument().createTextNode(message);
+
+        Element b = webView.getEngine().getDocument().createElement("b");
+        b.setTextContent("[" + level.toString() + "]" + " System message: ");
+
+        div.appendChild(b);
+        div.appendChild(text);
+
+        body.appendChild(div);
+    }
+
+    private void send() {
+        String message = inputField.getText();
+
         try {
             protocolStack.getApl().send(Message.Type.Msg, message);
-        } catch (SerializationException | IOException e) {
+        } catch (SerializationException | IOException e) { //TODO: IOException should be gone
             e.printStackTrace();
         }
 
+        addUserMessage(localUser, message);
         inputField.clear();
+    }
+
+    private void receive(Message message) {
+        if (message.getType() == Message.Type.Msg)
+            addUserMessage(remoteUser, message.getMsg());
+        else //TODO: should react differently on different message types
+            addSystemMessage(MessageLevel.Info, message.getType().name());
+    }
+
+    public void sendClick(ActionEvent event) {
+        send();
     }
 
     public void onMenuConnect(ActionEvent actionEvent) throws IOException {
