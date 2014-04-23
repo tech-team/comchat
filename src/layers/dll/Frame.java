@@ -49,7 +49,7 @@ public class Frame extends PDU {
     }
 
     public void setRET(byte value) {
-        RET = (byte) (value == 0 ? 1 : 0);
+        RET = (byte) (value == 0 ? 0 : 1);
     }
 
 
