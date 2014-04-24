@@ -81,7 +81,7 @@ public class ChatController extends DataController {
 
         protocolStack.getApl().subscribeToReceive(this::receive);
 
-        showConnectionDialog();
+        Platform.runLater(this::showConnectionDialog);
     }
 
     private void updateStatus(Boolean connected) {
