@@ -2,6 +2,7 @@ package gui;
 
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -22,6 +23,7 @@ public class ConnectionController extends DataController {
     public ComboBox<String> dataBits;
     public ComboBox<String> stopBits;
     public ComboBox<String> parityCheck;
+    public Button refresh;
 
     private ProtocolStack protocolStack;
 
@@ -45,6 +47,30 @@ public class ConnectionController extends DataController {
 
 
     public void onConnect(ActionEvent event) {
+        if (comPort.getValue().isEmpty())
+        {
+            Dialogs.create()
+                    .owner(stage)
+                    .title(ChatController.PROGRAM_NAME)
+                    .masthead("Error")
+                    .message("Please, select COM port.\nIf you do not see any listed, press Refresh button.")
+                    .showError();
+
+            return;
+        }
+
+        if (userName.getText().isEmpty())
+        {
+            Dialogs.create()
+                    .owner(stage)
+                    .title(ChatController.PROGRAM_NAME)
+                    .masthead("Error")
+                    .message("Please, input your username.")
+                    .showError();
+
+            return;
+        }
+
         try {
             protocolStack.getPhy().connect(
                     new ComPortSettings(comPort.getValue(),
@@ -68,5 +94,10 @@ public class ConnectionController extends DataController {
                 .message(message) //well, that has no effect for exception dialog unfortunately
                 .showException(withMessage);
         }
+    }
+
+    public void onRefresh(ActionEvent event) {
+        comPort.setItems(FXCollections.observableArrayList(ComPort.getAvailablePorts(true)));
+        comPort.setValue(ComPort.getDefaultPort());
     }
 }
