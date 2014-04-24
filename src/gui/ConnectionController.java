@@ -46,11 +46,13 @@ public class ConnectionController extends DataController {
 
     public void onConnect(ActionEvent event) {
         try {
-            protocolStack.getPhy().connect(new ComPortSettings(comPort.getValue(),
-                                                               baudRate.getValue(),
-                                                               DataBitsEnum.fromString(dataBits.getValue()).toDataBits(),
-                                                               StopBitsEnum.fromString(stopBits.getValue()).toStopBits(),
-                                                               ParityEnum.fromString(parityCheck.getValue()).toParity()));
+            protocolStack.getPhy().connect(
+                    new ComPortSettings(comPort.getValue(),
+                            baudRate.getValue(),
+                            DataBitsEnum.fromString(dataBits.getValue()).toDataBits(),
+                            StopBitsEnum.fromString(stopBits.getValue()).toStopBits(),
+                            ParityEnum.fromString(parityCheck.getValue()).toParity()));
+
             result = DialogResult.OK;
             resultData = userName.getText();
             this.close();

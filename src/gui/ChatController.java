@@ -49,6 +49,8 @@ public class ChatController extends DataController {
     private String localUser = "undefined";
     private String remoteUser = "undefined";
 
+    private Integer messageId = 0;
+
     @Override
     public void initWithData(Stage stage, Object data) {
         super.initWithData(stage, data);
@@ -94,6 +96,8 @@ public class ChatController extends DataController {
         Document document = engine.getDocument();
         Node body = document.getElementsByTagName("BODY").item(0);
         Element div = document.createElement("div");
+        div.setAttribute("id", messageId.toString());
+
         Text text = document.createTextNode(message);
 
         Element b = document.createElement("b");
@@ -103,6 +107,7 @@ public class ChatController extends DataController {
         div.appendChild(text);
 
         body.appendChild(div);
+        scrollChatToId(messageId++);
     }
 
     private void addSystemMessage(MessageLevel level, String message) {
@@ -111,6 +116,8 @@ public class ChatController extends DataController {
 
         Node body = document.getElementsByTagName("BODY").item(0);
         Element div = document.createElement("div");
+        div.setAttribute("id", messageId.toString());
+
         div.setAttribute("style", "color: " + level.toHtmlColor());
 
         Text text = document.createTextNode(message);
@@ -122,6 +129,7 @@ public class ChatController extends DataController {
         div.appendChild(text);
 
         body.appendChild(div);
+        scrollChatToId(messageId++);
     }
 
     private void send() {
@@ -197,8 +205,10 @@ public class ChatController extends DataController {
             connectionStage.showAndWait();
 
             if (connectionStage.getResult() == DialogResult.OK) {
-                addSystemMessage(MessageLevel.Info, "Successfully connected");
-                localUser = (String) getResultData();
+                //not sure why runLater needed here, cause we are already in UI thread and webEngine already loaded
+                Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
+
+                localUser = (String) connectionStage.getResultData();
 
                 statusIcon.setFill(Status.Connected.toColor());
                 statusText.setText(Status.Connected.toString());
@@ -250,5 +260,13 @@ public class ChatController extends DataController {
                         .message("You should connect first.\nUse Connection -> Connect.")
                         .showError();
         }
+    }
+
+    private void scrollChatToId(int id) {
+        try {
+            WebEngine engine = webView.getEngine();
+            engine.executeScript("document.getElementById(" + id + ").scrollIntoView()");
+        }
+        catch (NullPointerException ignored) {}
     }
 }
