@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.collections.*?>
-<?import javafx.geometry.*?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
-<GridPane fx:id="layout" hgap="10.0" maxHeight="1.7976931348623157E308" prefHeight="205.0001220703125" prefWidth="400.0" vgap="10.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ConnectionController">
-  <children>
+<?import javafx.scene.shape.Rectangle?>
+<GridPane fx:id="layout" hgap="10.0" maxHeight="1.7976931348623157E308" prefHeight="205.0" prefWidth="400.0" vgap="10.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ConnectionController">
+    <children>
     <Label text="Nickname:" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES" />
     <TextField fx:id="userName" prefWidth="269.0" text="User" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="0" GridPane.vgrow="SOMETIMES" />
     <Label text="COM port:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
@@ -24,7 +23,7 @@
     <ComboBox fx:id="stopBits" maxWidth="1.7976931348623157E308" prefWidth="-1.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
     <Label text="Parity check:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
     <ComboBox fx:id="parityCheck" maxWidth="1.7976931348623157E308" prefWidth="-1.0" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.vgrow="ALWAYS" />
-    <Button alignment="BASELINE_RIGHT" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onConnect" text="Connect" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" />
+    <Button alignment="BASELINE_CENTER" defaultButton="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onConnect" text="Connect" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" />
   </children>
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -33,6 +32,6 @@
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
   </columnConstraints>
   <padding>
-    <Insets bottom="40.0" left="10.0" right="10.0" top="15.0" />
+    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
   </padding>
 </GridPane>

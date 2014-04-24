@@ -182,7 +182,7 @@ public class ChatController extends DataController {
         send();
     }
 
-    public void onMenuConnect(ActionEvent actionEvent) throws IOException {
+    public void onMenuConnect(ActionEvent event) throws IOException {
         showConnectionDialog();
     }
 
@@ -190,12 +190,13 @@ public class ChatController extends DataController {
         try {
             FXMLLoader loader = new FXMLLoader(Main.class.getResource("/gui/templates/connection.fxml"));
 
-            Parent root = (Parent) loader.load();
+            Parent root = loader.load();
 
-            connectionStage = new DataStage((DataController) loader.getController(), protocolStack);
+            connectionStage = new DataStage(loader.getController(), protocolStack);
 
             connectionStage.setTitle("Connection");
-            Scene conScene = new Scene(root);
+            final double rem = javafx.scene.text.Font.getDefault().getSize() / 13;
+            Scene conScene = new Scene(root, 400.0*rem, 205.0*rem);
             conScene.getStylesheets().add("/gui/css/connection.css");
             connectionStage.setScene(conScene);
             connectionStage.setResizable(false);
