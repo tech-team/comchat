@@ -6,6 +6,10 @@ import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DataLinkLayer implements IDataLinkLayer {
     private IApplicationLayer apl;
@@ -18,15 +22,20 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void send(byte[] msg) throws IOException {
+        Queue<byte[]> messageHandler = new ConcurrentLinkedQueue<>();
         Frame frame = new Frame(Frame.Type.I, msg);
-        //TODO
-        phy.send(frame.serialize());
+        messageHandler.add(frame.serialize());
+        phy.send(messageHandler.element());
+        messageHandler.remove();// if ACK==1
     }
 
     @Override
     public void receive(byte[] data) {
+        Queue<Frame> dataHandler = new ConcurrentLinkedQueue<>();
         Frame frame = Frame.deserialize(data);
+        dataHandler.add(frame);
         apl.receive(frame.getMsg());
+        dataHandler.remove();
     }
 
     @Override

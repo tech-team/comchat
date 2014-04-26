@@ -54,7 +54,6 @@ public class Frame extends PDU {
         RET = (byte) (value == 0 ? 0 : 1);
     }
 
-
     public byte[] serialize() {
         byte typeByte = (byte) type.ordinal();
 
