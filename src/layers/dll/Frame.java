@@ -1,7 +1,6 @@
 package layers.dll;
 
 import layers.PDU;
-import sun.security.util.BitArray;
 import util.ArrayUtils;
 
 import java.nio.ByteBuffer;
@@ -46,12 +45,29 @@ public class Frame extends PDU {
         return msg;
     }
 
+    public boolean isACK() {
+        return ACK == 1;
+    }
+
+    public boolean isRET() {
+        return RET == 1;
+    }
+
+
     public void setACK(byte value) {
         ACK = (byte) (value == 0 ? 0 : 1);
     }
 
+    public void setACK(boolean value) {
+        ACK = (byte) (value ? 1 : 0);
+    }
+
     public void setRET(byte value) {
         RET = (byte) (value == 0 ? 0 : 1);
+    }
+
+    public void setRET(boolean value) {
+        RET = (byte) (value ? 1 : 0);
     }
 
     public byte[] serialize() {
@@ -66,7 +82,7 @@ public class Frame extends PDU {
         infoBytes[1] = supervisorInfoByte;
 
         byte[] frame = ArrayUtils.concatenate(infoBytes, msg);
-        byte[] size = ByteBuffer.allocate(4).putInt(frame.length).array();
+        byte[] size = ByteBuffer.allocate(2).putShort((short) frame.length).array();
         return ArrayUtils.concatenate(size, frame);
     }
 
@@ -94,7 +110,12 @@ public class Frame extends PDU {
         return frame;
     }
 
-    public static BitSet fromByteArray(byte[] bytes) {
+
+    public boolean isCorrect() {
+        return true; // TODO
+    }
+
+    private static BitSet fromByteArray(byte[] bytes) {
         BitSet bits = new BitSet();
         for (int i=0; i<bytes.length*8; i++) {
             if ((bytes[bytes.length-i/8-1]&(1<<(i%8))) > 0) {
@@ -104,7 +125,7 @@ public class Frame extends PDU {
         return bits;
     }
 
-    public BitSet division(BitSet x)
+    private BitSet division(BitSet x)
     {
         BitSet res = new BitSet(7);
         for (int i=0; i < 4; ++i)
@@ -134,7 +155,7 @@ public class Frame extends PDU {
         return res;
     }
 
-    public byte[] cyclicEncode(byte[] frame)
+    private byte[] cyclicEncode(byte[] frame)
     {
 
         BitSet input = fromByteArray(frame);
@@ -154,7 +175,7 @@ public class Frame extends PDU {
         return output.toByteArray();
     }
 
-    public boolean check(BitSet x)
+    private boolean check(BitSet x)
     {
         BitSet res = division(x);
         for (int i = 4; i < 7; ++i)
@@ -164,7 +185,7 @@ public class Frame extends PDU {
         return true;
     }
 
-    public byte[] cyclicDecode(byte[] frame)
+    private byte[] cyclicDecode(byte[] frame)
     {
         BitSet output = fromByteArray(frame);
         BitSet input = new BitSet(8 * frame.length);

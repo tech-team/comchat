@@ -315,13 +315,13 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     public void dataAvailable(SerialPortEvent event) {
         // reading size of the data
         try {
-            byte[] dataSize = new byte[4];
+            byte[] dataSize = new byte[2];
             for (int i = 0; i < dataSize.length; ++i) {
                 dataSize[i] = (byte) inStream.read();
             }
 
             // reading the whole data
-            int size = ByteBuffer.wrap(dataSize).getInt();
+            int size = (int) ByteBuffer.wrap(dataSize).getShort();
             byte[] data = new byte[size];
             for (int i = 0; i < size; ++i) {
                 data[i] = (byte) inStream.read();

@@ -6,36 +6,80 @@ import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DataLinkLayer implements IDataLinkLayer {
     private IApplicationLayer apl;
     private IPhysicalLayer phy;
 
+    private Queue<byte[]> queueToSend = new ConcurrentLinkedQueue<>();
+    private AtomicBoolean wasACK = new AtomicBoolean(false);
+
+
+    private Thread sendingThread = new Thread(this::sendingThreadJob);
+    private boolean sendingActive = false;
+
+    private void sendingThreadJob() {
+        while (sendingActive) {
+            if (!queueToSend.isEmpty() && canSend()) {
+                // PROTO: sendLastToPhy();
+                wasACK.set(false);
+            }
+        }
+    }
+
     @Override
     public void connect(PhysicalLayerSettings settings) throws Exception {
         getLowerLayer().connect(settings);
+        sendingActive = true;
+        sendingThread.start();
+    }
+
+    @Override
+    public void disconnect() {
+        sendingActive = false;
+        queueToSend.clear();
+        wasACK.set(true);
+        getLowerLayer().disconnect();
     }
 
     @Override
     public void send(byte[] msg) throws IOException {
-        Queue<byte[]> messageHandler = new ConcurrentLinkedQueue<>();
         Frame frame = new Frame(Frame.Type.I, msg);
-        messageHandler.add(frame.serialize());
-        phy.send(messageHandler.element());
-        messageHandler.remove();// if ACK==1
+        queueToSend.add(frame.serialize());
     }
 
     @Override
     public void receive(byte[] data) {
-        Queue<Frame> dataHandler = new ConcurrentLinkedQueue<>();
         Frame frame = Frame.deserialize(data);
-        dataHandler.add(frame);
-        apl.receive(frame.getMsg());
-        dataHandler.remove();
+
+        if (frame.isACK()) {
+            wasACK.set(true);
+            if (queueToSend.isEmpty()) {
+                //TODO: send error
+                return;
+            }
+            queueToSend.poll();
+        }
+        else if (frame.isRET()) {
+            // PROTO: sendLastToPhy();
+        }
+        else {
+            if (frame.isCorrect()) {
+                Frame ack = new Frame(Frame.Type.S, new byte[0]);
+                ack.setACK(true);
+
+                apl.receive(frame.getMsg());
+            }
+            else {
+                Frame ret = new Frame(Frame.Type.S, new byte[0]);
+                ret.setRET(true);
+
+                // PROTO: getLowerLayer().send(ret.serialize());
+            }
+        }
     }
 
     @Override
@@ -56,5 +100,14 @@ public class DataLinkLayer implements IDataLinkLayer {
     @Override
     public void setLowerLayer(ILayer layer) {
         phy = (IPhysicalLayer) layer;
+    }
+
+    private void sendLastToPhy() throws IOException {
+        phy.send(queueToSend.peek());
+        wasACK.set(false);
+    }
+
+    private boolean canSend() {
+        return wasACK.get() && getLowerLayer().readyToSend();
     }
 }
