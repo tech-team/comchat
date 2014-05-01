@@ -2,6 +2,7 @@ package layers;
 
 import layers.apl.IApplicationLayer;
 import layers.dll.IDataLinkLayer;
+import layers.exceptions.ProtocolStackException;
 import layers.phy.IPhysicalLayer;
 
 public class ProtocolStack {

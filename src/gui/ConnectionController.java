@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
@@ -88,12 +89,14 @@ public class ConnectionController extends DataController {
             String message = "Unable to connect with these settings";
             Exception withMessage = new Exception(message, e);
 
-            Dialogs.create()
-                .owner(stage)
-                .title("ComChat")
-                .masthead("Error")
-                .message(message) //well, that has no effect for exception dialog unfortunately
-                .showException(withMessage);
+            Platform.runLater(() -> {
+                Dialogs.create()
+                        .owner(stage)
+                        .title("ComChat")
+                        .masthead("Error")
+                        .message(message) //well, that has no effect for exception dialog unfortunately
+                        .showException(withMessage);
+            });
         }
     }
 

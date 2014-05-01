@@ -86,25 +86,19 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     public static List<String> getAvailableDataBits() {
         List<String> names = new LinkedList<>();
-        stream(DataBitsEnum.values()).forEach(e -> {
-            names.add(e.toString());
-        });
+        stream(DataBitsEnum.values()).forEach(e -> names.add(e.toString()));
         return names;
     }
 
     public static List<String> getAvailableStopBits() {
         List<String> names = new LinkedList<>();
-        stream(StopBitsEnum.values()).forEach(e -> {
-            names.add(e.toString());
-        });
+        stream(StopBitsEnum.values()).forEach(e -> names.add(e.toString()));
         return names;
     }
 
     public static List<String> getAvailableParity() {
         List<String> names = new LinkedList<>();
-        stream(ParityEnum.values()).forEach(e -> {
-            names.add(e.toString());
-        });
+        stream(ParityEnum.values()).forEach(e -> names.add(e.toString()));
         return names;
     }
 
@@ -137,12 +131,12 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     public void connect(PhysicalLayerSettings settings) throws ConnectionException {
         try {
             connect((ComPortSettings) settings);
-        } catch (NoSuchPortException | UnsupportedCommOperationException e) {
+        } catch (NoSuchPortException | UnsupportedCommOperationException | PortInUseException e) {
             throw new ConnectionException(e);
         }
     }
 
-    private void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
+    private void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException, PortInUseException {
         String port = settings.getPort();
 
         LOGGER.info("Connecting to port " + port);
@@ -159,7 +153,8 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
             inStream = serialPort.getInputStream();
 
         } catch (PortInUseException e) {
-            LOGGER.warning("Port " + port + " is already in use");
+            LOGGER.severe("Port " + port + " is already in use");
+            throw e;
         } catch (UnsupportedCommOperationException e) {
             LOGGER.severe("Unsupported com port params");
             disconnect();
@@ -218,7 +213,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
-    public void send(byte[] data) {
+    public synchronized void send(byte[] data) {
         System.out.println("ready? - " + readyToSend());
         serialPort.setRTS(false);
         try {
@@ -226,6 +221,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         } catch (IOException e) {
             LOGGER.warning("Exception occurred: " + e.getMessage());
             notifyOnError(e);
+            return;
         }
         try {
             outStream.flush();
@@ -286,7 +282,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
                 break;
 
             case SerialPortEvent.DATA_AVAILABLE:
-                System.out.println("DATA_AVAILABLE");
                 dataAvailable(event);
                 break;
 
@@ -307,6 +302,9 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
             case SerialPortEvent.DSR:
                 System.out.println("DSR");
+                if (!serialPort.isDSR()) {
+                    setConnected(false);
+                }
 //                dataSetReady(event);
                 break;
 

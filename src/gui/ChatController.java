@@ -29,6 +29,7 @@ import org.w3c.dom.Text;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ChatController extends DataController {
     public Button sendButton;
@@ -48,7 +49,13 @@ public class ChatController extends DataController {
     private String localUser = "undefined";
     private String remoteUser = "undefined";
 
+    private static final String messageSent = "[×] ";
+    private static final String messageReceived = "[«] ";
+    private static final String messageAck = "[»] ";
+
     private Integer messageId = 0;
+
+    private HashMap<Integer, Integer> messageIdToHtmlId = new HashMap<>();
 
     @Override
     public void initWithData(Stage stage, Object data) {
@@ -73,7 +80,7 @@ public class ChatController extends DataController {
 
             if (action == Dialog.Actions.YES) {
                 if (status == Status.Connected)
-                    gracefulDisconnect();
+                    protocolStack.getApl().disconnect();
             } else
                 e.consume();
         });
@@ -84,27 +91,55 @@ public class ChatController extends DataController {
     }
 
     private void updateStatus(boolean connected) {
-        if (connected) {
-            protocolStack.getApl().send(Message.Type.Auth, localUser); // TODO: not sure if this should be here
-        }
-        status = Status.fromBoolean(connected);
-        statusIcon.setFill(status.toColor());
-        statusText.setText(status.toString());
-        sendButton.setDisable(!connected);
+        Status newStatus = Status.fromBoolean(connected);
+        if (status == newStatus)
+            return;
+
+        Platform.runLater(() -> {
+            status = newStatus;
+            statusIcon.setFill(status.toColor());
+            statusText.setText(status.toString());
+            sendButton.setDisable(!connected);
+
+            if (status == Status.NotConnected) {
+                protocolStack.getApl().disconnect();
+                addSystemMessage(MessageLevel.Info, "Disconnected");
+                Dialogs.create()
+                        .owner(stage)
+                        .title(PROGRAM_NAME)
+                        .masthead("Information")
+                        .message("Disconnected")
+                        .showInformation();
+            }
+        });
     }
 
     private void addUserMessage(String author, String message) {
+        addUserMessage(author, message, 0);
+    }
+
+    private void addUserMessage(String author, String message, Integer id) {
         WebEngine engine = webView.getEngine();
         Document document = engine.getDocument();
         Node body = document.getElementsByTagName("BODY").item(0);
         Element div = document.createElement("div");
+
+        messageIdToHtmlId.put(id, messageId);
         div.setAttribute("id", messageId.toString());
+        div.setAttribute("data-message-id", id.toString());
 
         Text text = document.createTextNode(message);
+
+        Element mark = document.createElement("b");
+        if (id != 0)
+            mark.setTextContent(messageSent);
+        else
+            mark.setTextContent(messageReceived);
 
         Element b = document.createElement("b");
         b.setTextContent(author + ": ");
 
+        div.appendChild(mark);
         div.appendChild(b);
         div.appendChild(text);
 
@@ -137,9 +172,9 @@ public class ChatController extends DataController {
     private void send() {
         String message = inputField.getText();
 
-        protocolStack.getApl().send(Message.Type.Msg, message);
+        int id = protocolStack.getApl().send(Message.Type.Msg, message);
 
-        addUserMessage(localUser, message);
+        addUserMessage(localUser, message, id);
         inputField.clear();
     }
 
@@ -151,20 +186,24 @@ public class ChatController extends DataController {
             switch (message.getType()) {
                 case Msg:
                     addUserMessage(remoteUser, message.getMsg());
+                    protocolStack.getApl().send(Message.Type.Ack,
+                            Integer.toString(message.getId()));
                     break;
                 case Auth:
                     remoteUser = message.getMsg();
                     addSystemMessage(MessageLevel.Info, "Remote user connected: " + message.getMsg());
+                    protocolStack.getApl().handshakeFinished();
                     //TODO: enable "sendability"
                     break;
                 case Ack:
-                    //TODO: is it necessary?
+                    int id = Integer.parseInt(message.getMsg());
+                    markMessage(id);
                     break;
-                case Term:
+                case Term: //TODO: DEPRECATED
                     addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
-                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
+//                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
                     break;
-                case TermAck:
+                case TermAck: //TODO: DEPRECATED
                     //TODO: interface though all the layers?
                     addSystemMessage(MessageLevel.Info, "Termination confirmed");
                     protocolStack.getApl().disconnect();
@@ -174,6 +213,20 @@ public class ChatController extends DataController {
                     throw new NotImplementedException();
             }
         });
+    }
+
+    private void markMessage(int id) {
+        WebEngine engine = webView.getEngine();
+        Document document = engine.getDocument();
+
+        Integer htmlId = messageIdToHtmlId.get(id);
+        if (htmlId == null)
+            return;
+
+        Element div = document.getElementById(htmlId.toString());
+        Element mark = (Element) div.getFirstChild();
+
+        mark.setTextContent(messageAck);
     }
 
     public void sendClick(ActionEvent event) {
@@ -204,13 +257,8 @@ public class ChatController extends DataController {
             connectionStage.showAndWait();
 
             if (connectionStage.getResult() == DialogResult.OK) {
-                //not sure why runLater needed here, cause we are already in UI thread and webEngine already loaded
-                Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
-
                 localUser = (String) connectionStage.getResultData();
-
-                statusIcon.setFill(Status.Connected.toColor());
-                statusText.setText(Status.Connected.toString());
+                onConnect();
             } else {
                 Dialogs.create()
                         .owner(stage)
@@ -229,16 +277,29 @@ public class ChatController extends DataController {
         }
     }
 
-    public void onMenuDisconnect(ActionEvent event) {
-        if (status == Status.Connected)
-            gracefulDisconnect();
+    private void onConnect() {
+        //not sure why runLater needed here, cause we are already in UI thread and webEngine already loaded
+        Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
+
+        protocolStack.getApl().subscribeOnError(this::onError);
+        protocolStack.getApl().send(Message.Type.Auth, localUser);
     }
 
-    private void gracefulDisconnect() {
-        if (true) { // TODO: we need a condition to be sure that we have somebody to send a TERM message
-            protocolStack.getApl().send(Message.Type.Term, "");
-        }
+    private void onError(Exception e) {
         protocolStack.getApl().disconnect();
+
+        addSystemMessage(MessageLevel.Error, "Connection lost");
+        Dialogs.create()
+                .owner(stage)
+                .title(PROGRAM_NAME)
+                .masthead("Error")
+                .message("Connection lost")
+                .showException(e);
+    }
+
+    public void onMenuDisconnect(ActionEvent event) {
+        if (status == Status.Connected)
+            protocolStack.getApl().disconnect();
     }
 
     private String getHtmlPage() {
