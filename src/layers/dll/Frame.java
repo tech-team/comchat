@@ -34,6 +34,8 @@ public class Frame extends PDU {
     private Type type;
     private byte[] msg;
 
+    private boolean correct;
+
     private Frame(Type type, byte[] msg) {
         this.type = type;
         this.msg = msg;
@@ -130,6 +132,15 @@ public class Frame extends PDU {
         return (byte) (END_CHUNKS ? 1 : 0);
     }
 
+    public boolean isCorrect() {
+        return correct;
+    }
+
+    private void setCorrect(boolean correct) {
+        this.correct = correct;
+    }
+
+
     public byte[] serialize() {
         byte typeByte = (byte) type.ordinal();
 
@@ -148,10 +159,15 @@ public class Frame extends PDU {
 
         byte[] frame = ArrayUtils.concatenate(infoBytes, msg);
         byte[] size = ByteBuffer.allocate(2).putShort((short) frame.length).array();
+
+//        byte[] encodedFrame = cyclicEncode(frame);
         return ArrayUtils.concatenate(size, frame);
     }
 
     public static Frame deserialize(byte[] data) {
+//        boolean correct = isCorrect(data);
+//        data = cyclicDecode(data);
+
         byte typeByte = data[0];
         Type type = null;
         try {
@@ -175,6 +191,7 @@ public class Frame extends PDU {
         frame.setRET(RET != 0);
         frame.setCHUNKS(CHUNKS != 0);
         frame.setEND_CHUNKS(END_CHUNKS != 0);
+        frame.setCorrect(true);
 
         return frame;
     }
@@ -336,6 +353,8 @@ public class Frame extends PDU {
     }
 
 
+
+
     public static void main(String[] args) {
         /*
         byte[] lol = {1,0,1,0};
@@ -344,11 +363,21 @@ public class Frame extends PDU {
         byte[] lolDecode = cyclicDecode(lol);
         for(byte b:lolDecode)System.out.println(b);
         */
-        byte[] lol = {118};
-        for(byte a:lol){System.out.println(a); };
-        byte[] lol1 = cyclicEncode(lol);
-        for(byte a:lol1){System.out.println(a); };
-        cyclicDecode(lol1);
-        isCorrect(lol1);
+        byte[] bytes = "Test".getBytes();
+
+        byte[] encoded = cyclicEncode(bytes);
+        for(byte a : encoded){
+            System.out.print(a + " ");
+        }
+        System.out.println();
+
+        byte[] decoded = cyclicDecode(encoded);
+        for(byte a:decoded) {
+            System.out.print(a + " ");
+        }
+        System.out.println();
+        System.out.println(new String(decoded));
+
+        System.out.println(isCorrect(encoded));
     }
 }
