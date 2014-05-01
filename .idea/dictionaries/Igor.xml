@@ -2,6 +2,7 @@
   <dictionary name="Igor">
     <words>
       <w>deserialize</w>
+      <w>proto</w>
     </words>
   </dictionary>
 </component>

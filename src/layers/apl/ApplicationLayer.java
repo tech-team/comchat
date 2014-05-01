@@ -3,6 +3,7 @@ package layers.apl;
 import layers.ILayer;
 import layers.SerializationException;
 import layers.dll.IDataLinkLayer;
+import layers.exceptions.ConnectionException;
 import layers.phy.settings.PhysicalLayerSettings;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class ApplicationLayer implements IApplicationLayer {
     }
 
     @Override
-    public void connect(PhysicalLayerSettings settings) throws Exception {
+    public void connect(PhysicalLayerSettings settings) throws ConnectionException {
         getLowerLayer().connect(settings);
     }
 

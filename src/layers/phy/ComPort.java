@@ -6,6 +6,7 @@ import layers.ProtocolStack;
 import layers.apl.ApplicationLayer;
 import layers.dll.DataLinkLayer;
 import layers.dll.IDataLinkLayer;
+import layers.exceptions.ConnectionException;
 import layers.phy.settings.PhysicalLayerSettings;
 import layers.phy.settings.comport_settings.ComPortSettings;
 import layers.phy.settings.comport_settings.DataBitsEnum;
@@ -40,6 +41,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     private boolean connected = false;
 
     private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
+    private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
 
     public ComPort() {
@@ -132,8 +134,12 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
-    public void connect(PhysicalLayerSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
-        connect((ComPortSettings) settings);
+    public void connect(PhysicalLayerSettings settings) throws ConnectionException {
+        try {
+            connect((ComPortSettings) settings);
+        } catch (NoSuchPortException | UnsupportedCommOperationException e) {
+            throw new ConnectionException(e);
+        }
     }
 
     private void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
@@ -212,11 +218,16 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
-    public void send(byte[] data) throws IOException {
+    public void send(byte[] data) {
 //        serialPort.setDTR(true);
         System.out.println("ready? - " + readyToSend());
         serialPort.setRTS(false);
-        outStream.write(data);
+        try {
+            outStream.write(data);
+        } catch (IOException e) {
+            LOGGER.warning("Exception occurred: " + e.getMessage());
+            notifyOnError(e);
+        }
         try {
             outStream.flush();
         } catch (IOException ignored) { }
@@ -225,7 +236,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     @Override
     public boolean readyToSend() {
-        return serialPort.isCTS() && serialPort.isDSR();
+        return serialPort.isDSR() && serialPort.isCTS();
     }
 
     @Override
@@ -255,6 +266,10 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     private void notifyConnectionStatusChanged(boolean status) {
         connectionChangedListeners.forEach(listener -> listener.accept(status));
+    }
+
+    private void notifyOnError(Exception e) {
+        onErrorListeners.forEach(listener -> listener.accept(e));
     }
 
 

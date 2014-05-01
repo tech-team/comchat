@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.ProtocolStack;
+import layers.exceptions.ConnectionException;
 import layers.phy.ComPort;
 import layers.phy.settings.comport_settings.ComPortSettings;
 import layers.phy.settings.comport_settings.DataBitsEnum;
@@ -72,7 +73,7 @@ public class ConnectionController extends DataController {
         }
 
         try {
-            protocolStack.getPhy().connect(
+            protocolStack.getApl().connect(
                     new ComPortSettings(comPort.getValue(),
                             baudRate.getValue(),
                             DataBitsEnum.fromString(dataBits.getValue()).toDataBits(),
@@ -83,7 +84,7 @@ public class ConnectionController extends DataController {
             resultData = userName.getText();
             this.close();
         }
-        catch(Exception e) {
+        catch(ConnectionException e) {
             String message = "Unable to connect with these settings";
             Exception withMessage = new Exception(message, e);
 

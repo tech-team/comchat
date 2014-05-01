@@ -2,6 +2,7 @@ package layers.dll;
 
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
+import layers.exceptions.ConnectionException;
 import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
 
@@ -31,7 +32,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     }
 
     @Override
-    public void connect(PhysicalLayerSettings settings) throws Exception {
+    public void connect(PhysicalLayerSettings settings) throws ConnectionException {
         getLowerLayer().connect(settings);
         sendingActive = true;
         sendingThread.start();
