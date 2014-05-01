@@ -151,38 +151,44 @@ public class DataLinkLayer implements IDataLinkLayer {
     public void receive(byte[] data) {
         Frame frame = Frame.deserialize(data);
 
-        if (frame.isACK()) {
-            if (framesToSend.isEmpty()) {
-                notifyOnError(new UnexpectedChatException("Frame queue is empty"));
-                return;
-            }
-            framesToSend.poll();
-            wasACK.set(true);
-        }
-        else if (frame.isRET()) {
-            forceSend();
-        }
-        else {
-            if (frame.isCorrect()) {
-                Frame ack = Frame.newACKFrame();
-                systemFramesToSend.add(ack.serialize());
+        if (frame.getType() != Frame.Type.I && !frame.isCorrect())
+            return; // throw away this frame
 
-
-                receivedChunkMessages.add(frame.getMsg());
-                if (frame.isEND_CHUNKS()) {
-                    byte[] resultedMsg = new byte[0];
-                    for (byte[] chunk : receivedChunkMessages) {
-                        resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
+        switch (frame.getType()) {
+            case S:
+                if (frame.isACK()) {
+                    if (framesToSend.isEmpty()) {
+                        notifyOnError(new UnexpectedChatException("Frame queue is empty"));
+                        return;
                     }
-                    receivedChunkMessages.clear();
-                    apl.receive(resultedMsg);
+                    framesToSend.poll();
+                    wasACK.set(true);
                 }
-            }
-            else {
-                Frame ret = Frame.newRETFrame();
-                systemFramesToSend.add(ret.serialize());
-            }
+                else if (frame.isRET()) {
+                    forceSend();
+                }
+                break;
+            case I:
+                if (frame.isCorrect()) {
+                    Frame ack = Frame.newACKFrame();
+                    systemFramesToSend.add(ack.serialize());
 
+
+                    receivedChunkMessages.add(frame.getMsg());
+                    if (frame.isEND_CHUNKS()) {
+                        byte[] resultedMsg = new byte[0];
+                        for (byte[] chunk : receivedChunkMessages) {
+                            resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
+                        }
+                        receivedChunkMessages.clear();
+                        apl.receive(resultedMsg);
+                    }
+                }
+                else {
+                    Frame ret = Frame.newRETFrame();
+                    systemFramesToSend.add(ret.serialize());
+                }
+                break;
         }
     }
 

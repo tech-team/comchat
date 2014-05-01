@@ -156,9 +156,7 @@ public class Frame extends PDU {
         Type type = null;
         try {
             type = Type.fromInteger(typeByte);
-        } catch (Exception e) {
-            e.printStackTrace(); // TODO: review
-        }
+        } catch (Exception ignored) {}
 
         byte supervisorInfoByte = data[1];
         byte mask = 0x01;
