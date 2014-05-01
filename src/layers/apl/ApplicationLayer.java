@@ -56,7 +56,7 @@ public class ApplicationLayer implements IApplicationLayer {
     @Override
     public void send(Message.Type type, String msg) {
         System.out.println("Sent: " + msg);
-        dll.send(new Message(type, msg).serialize());
+        dll.send(new Message(0, type, msg).serialize());
 //        dll.send(msg.getBytes());
     }
 

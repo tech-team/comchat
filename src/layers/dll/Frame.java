@@ -14,7 +14,7 @@ public class Frame extends PDU {
         public static Type fromInteger(int x) throws Exception {
             int max = Type.values().length;
             if (x < 0 || x >= max)
-                throw new Exception("bad range!");
+                throw new Exception("bad range! x was: " + x);
 
             return Type.values()[x];
         }

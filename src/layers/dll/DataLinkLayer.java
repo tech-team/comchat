@@ -218,8 +218,4 @@ public class DataLinkLayer implements IDataLinkLayer {
         phy.send(framesToSend.peek());
         wasACK.set(false);
     }
-
-    private boolean canSend() {
-        return wasACK.get() && getLowerLayer().readyToSend();
-    }
 }
