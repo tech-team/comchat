@@ -3,6 +3,7 @@ package layers.dll;
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
 import layers.exceptions.ConnectionException;
+import layers.exceptions.DeserializationException;
 import layers.exceptions.LayerUnavailableException;
 import layers.exceptions.UnexpectedChatException;
 import layers.phy.IPhysicalLayer;
@@ -29,6 +30,7 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     private boolean remoteUserConnected = false;
     private AtomicBoolean wasACK = new AtomicBoolean(true);
+    private AtomicBoolean forceSending = new AtomicBoolean(false);
 
 
     private Thread sendingThread = new Thread(this::sendingThreadJob);
@@ -38,6 +40,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     private static final int ACCESSING_PHY_TIMEOUT = 5000;
 
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
+
 
 
     private int getSendingCycles() {
@@ -75,7 +78,8 @@ public class DataLinkLayer implements IDataLinkLayer {
                 if (!framesToSend.isEmpty()) {
                     if (getLowerLayer().readyToSend()) {
                         accessingCycles = getPhyAccessingCycles();
-                        if (wasACK.get()) { // if we are permitted to send next frame
+                        if (forceSending.get() || wasACK.get()) { // if we are permitted to send next frame
+                            forceSending.set(false);
                             sendingCycles = getSendingCycles();
                             sendLastToPhy();
                         }
@@ -84,7 +88,7 @@ public class DataLinkLayer implements IDataLinkLayer {
                         }
 
                         if (sendingCycles <= 0) {
-                            wasACK.set(true); // pretending that a frame has been delivered
+                            forceSend();
                             sendingCycles = getSendingCycles();
                         }
                     }
@@ -144,7 +148,14 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void receive(byte[] data) {
-        Frame frame = Frame.deserialize(data);
+        Frame frame;
+        try {
+            frame = Frame.deserialize(data);
+        } catch (DeserializationException ignored) {
+            Frame ret = Frame.newRETFrame();
+            systemFramesToSend.add(ret.serialize());
+            return;
+        }
 
         if (frame.isACK()) {
             if (framesToSend.isEmpty()) {
@@ -155,29 +166,29 @@ public class DataLinkLayer implements IDataLinkLayer {
             wasACK.set(true);
         }
         else if (frame.isRET()) {
-            sendLastToPhy();
+            forceSend();
         }
         else {
-            if (frame.isCorrect()) {
-                Frame ack = Frame.newACKFrame();
-                systemFramesToSend.add(ack.serialize());
+
+            Frame ack = Frame.newACKFrame();
+            systemFramesToSend.add(ack.serialize());
 
 
-                receivedChunkMessages.add(frame.getMsg());
-                if (frame.isEND_CHUNKS()) {
-                    byte[] resultedMsg = new byte[0];
-                    for (byte[] chunk : receivedChunkMessages) {
-                        resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
-                    }
-                    receivedChunkMessages.clear();
-                    apl.receive(resultedMsg);
+            receivedChunkMessages.add(frame.getMsg());
+            if (frame.isEND_CHUNKS()) {
+                byte[] resultedMsg = new byte[0];
+                for (byte[] chunk : receivedChunkMessages) {
+                    resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
                 }
+                receivedChunkMessages.clear();
+                apl.receive(resultedMsg);
             }
-            else {
-                Frame ret = Frame.newRETFrame();
-                systemFramesToSend.add(ret.serialize());
-            }
+
         }
+    }
+
+    private void forceSend() {
+        forceSending.set(true);
     }
 
     @Override

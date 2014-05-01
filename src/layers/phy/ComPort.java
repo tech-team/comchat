@@ -282,7 +282,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
                 break;
 
             case SerialPortEvent.DATA_AVAILABLE:
-                System.out.println("DATA_AVAILABLE");
                 dataAvailable(event);
                 break;
 
