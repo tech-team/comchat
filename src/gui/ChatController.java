@@ -29,6 +29,7 @@ import org.w3c.dom.Text;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ChatController extends DataController {
     public Button sendButton;
@@ -48,7 +49,13 @@ public class ChatController extends DataController {
     private String localUser = "undefined";
     private String remoteUser = "undefined";
 
+    private static final String messageSent = "[×] ";
+    private static final String messageReceived = "[«] ";
+    private static final String messageAck = "[»] ";
+
     private Integer messageId = 0;
+
+    private HashMap<Integer, Integer> messageIdToHtmlId = new HashMap<>();
 
     @Override
     public void initWithData(Stage stage, Object data) {
@@ -108,17 +115,31 @@ public class ChatController extends DataController {
     }
 
     private void addUserMessage(String author, String message) {
+        addUserMessage(author, message, 0);
+    }
+
+    private void addUserMessage(String author, String message, Integer id) {
         WebEngine engine = webView.getEngine();
         Document document = engine.getDocument();
         Node body = document.getElementsByTagName("BODY").item(0);
         Element div = document.createElement("div");
+
+        messageIdToHtmlId.put(id, messageId);
         div.setAttribute("id", messageId.toString());
+        div.setAttribute("data-message-id", id.toString());
 
         Text text = document.createTextNode(message);
+
+        Element mark = document.createElement("b");
+        if (id != 0)
+            mark.setTextContent(messageSent);
+        else
+            mark.setTextContent(messageReceived);
 
         Element b = document.createElement("b");
         b.setTextContent(author + ": ");
 
+        div.appendChild(mark);
         div.appendChild(b);
         div.appendChild(text);
 
@@ -151,9 +172,9 @@ public class ChatController extends DataController {
     private void send() {
         String message = inputField.getText();
 
-        protocolStack.getApl().send(Message.Type.Msg, message);
+        int id = protocolStack.getApl().send(Message.Type.Msg, message);
 
-        addUserMessage(localUser, message);
+        addUserMessage(localUser, message, id);
         inputField.clear();
     }
 
@@ -165,6 +186,8 @@ public class ChatController extends DataController {
             switch (message.getType()) {
                 case Msg:
                     addUserMessage(remoteUser, message.getMsg());
+                    protocolStack.getApl().send(Message.Type.Ack,
+                            Integer.toString(message.getId()));
                     break;
                 case Auth:
                     remoteUser = message.getMsg();
@@ -173,13 +196,14 @@ public class ChatController extends DataController {
                     //TODO: enable "sendability"
                     break;
                 case Ack:
-                    //TODO: is it necessary?
+                    int id = Integer.parseInt(message.getMsg());
+                    markMessage(id);
                     break;
-                case Term:
+                case Term: //TODO: DEPRECATED
                     addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
 //                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
                     break;
-                case TermAck:
+                case TermAck: //TODO: DEPRECATED
                     //TODO: interface though all the layers?
                     addSystemMessage(MessageLevel.Info, "Termination confirmed");
                     protocolStack.getApl().disconnect();
@@ -189,6 +213,20 @@ public class ChatController extends DataController {
                     throw new NotImplementedException();
             }
         });
+    }
+
+    private void markMessage(int id) {
+        WebEngine engine = webView.getEngine();
+        Document document = engine.getDocument();
+
+        Integer htmlId = messageIdToHtmlId.get(id);
+        if (htmlId == null)
+            return;
+
+        Element div = document.getElementById(htmlId.toString());
+        Element mark = (Element) div.getFirstChild();
+
+        mark.setTextContent(messageAck);
     }
 
     public void sendClick(ActionEvent event) {

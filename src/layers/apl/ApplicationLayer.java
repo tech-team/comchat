@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 public class ApplicationLayer implements IApplicationLayer {
     private IDataLinkLayer dll;
     private List<Consumer<Message>> receivers = new LinkedList<>();
+    private int messageId = 0;
 
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
@@ -51,13 +52,19 @@ public class ApplicationLayer implements IApplicationLayer {
     @Override
     public void disconnect() {
         getLowerLayer().disconnect();
+        messageId = 1;
     }
 
     @Override
-    public void send(Message.Type type, String msg) {
+    public int send(Message.Type type, String msg) {
         System.out.println("Sent: " + msg);
-        dll.send(new Message(0, type, msg).serialize());
-//        dll.send(msg.getBytes());
+
+        if (type == Message.Type.Msg)
+            ++messageId;
+
+        dll.send(new Message(messageId, type, msg).serialize());
+
+        return messageId;
     }
 
     @Override
