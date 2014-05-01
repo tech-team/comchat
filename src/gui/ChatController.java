@@ -83,7 +83,10 @@ public class ChatController extends DataController {
         Platform.runLater(this::showConnectionDialog);
     }
 
-    private void updateStatus(Boolean connected) {
+    private void updateStatus(boolean connected) {
+        if (connected) {
+            protocolStack.getApl().send(Message.Type.Auth, localUser); // TODO: not sure if this should be here
+        }
         status = Status.fromBoolean(connected);
         statusIcon.setFill(status.toColor());
         statusText.setText(status.toString());

@@ -219,7 +219,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     @Override
     public void send(byte[] data) {
-//        serialPort.setDTR(true);
         System.out.println("ready? - " + readyToSend());
         serialPort.setRTS(false);
         try {
@@ -351,11 +350,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // TODO: add own exceptions
-//        Scanner scanner = new Scanner(inStream);
-//        String line = scanner.nextLine();
-//        System.out.println(line);
     }
 
 

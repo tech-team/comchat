@@ -23,7 +23,7 @@ public enum Status {
         return color;
     }
 
-    public static Status fromBoolean(Boolean connected) {
+    public static Status fromBoolean(boolean connected) {
         if (connected)
             return Status.Connected;
         else

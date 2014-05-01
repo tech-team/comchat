@@ -74,7 +74,6 @@ public class DataLinkLayer implements IDataLinkLayer {
             }
             queueToSend.poll();
             wasACK.set(true);
-            System.out.println("Received ACK");
         }
         else if (frame.isRET()) {
             sendLastToPhy();
