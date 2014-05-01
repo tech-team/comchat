@@ -73,7 +73,7 @@ public class ChatController extends DataController {
 
             if (action == Dialog.Actions.YES) {
                 if (status == Status.Connected)
-                    gracefulDisconnect();
+                    protocolStack.getApl().disconnect();
             } else
                 e.consume();
         });
@@ -96,12 +96,12 @@ public class ChatController extends DataController {
 
             if (status == Status.NotConnected) {
                 protocolStack.getApl().disconnect();
-                addSystemMessage(MessageLevel.Info, "Connection lost");
+                addSystemMessage(MessageLevel.Info, "Disconnected");
                 Dialogs.create()
                         .owner(stage)
                         .title(PROGRAM_NAME)
                         .masthead("Information")
-                        .message("Connection lost")
+                        .message("Disconnected")
                         .showInformation();
             }
         });
@@ -219,14 +219,8 @@ public class ChatController extends DataController {
             connectionStage.showAndWait();
 
             if (connectionStage.getResult() == DialogResult.OK) {
-                //not sure why runLater needed here, cause we are already in UI thread and webEngine already loaded
-                Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
-
                 localUser = (String) connectionStage.getResultData();
-                protocolStack.getApl().send(Message.Type.Auth, localUser);
-                //TODO: no need because of statusChanged callback
-                statusIcon.setFill(Status.Connected.toColor());
-                statusText.setText(Status.Connected.toString());
+                onConnect();
             } else {
                 Dialogs.create()
                         .owner(stage)
@@ -245,16 +239,29 @@ public class ChatController extends DataController {
         }
     }
 
-    public void onMenuDisconnect(ActionEvent event) {
-        if (status == Status.Connected)
-            gracefulDisconnect();
+    private void onConnect() {
+        //not sure why runLater needed here, cause we are already in UI thread and webEngine already loaded
+        Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
+
+        protocolStack.getApl().subscribeOnError(this::onError);
+        protocolStack.getApl().send(Message.Type.Auth, localUser);
     }
 
-    private void gracefulDisconnect() {
-//        if (true) { // TODO: we need a condition to be sure that we have somebody to send a TERM message
-//            protocolStack.getApl().send(Message.Type.Term, "");
-//        }
+    private void onError(Exception e) {
         protocolStack.getApl().disconnect();
+
+        addSystemMessage(MessageLevel.Error, "Connection lost");
+        Dialogs.create()
+                .owner(stage)
+                .title(PROGRAM_NAME)
+                .masthead("Error")
+                .message("Connection lost")
+                .showException(e);
+    }
+
+    public void onMenuDisconnect(ActionEvent event) {
+        if (status == Status.Connected)
+            protocolStack.getApl().disconnect();
     }
 
     private String getHtmlPage() {
