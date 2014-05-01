@@ -137,12 +137,12 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     public void connect(PhysicalLayerSettings settings) throws ConnectionException {
         try {
             connect((ComPortSettings) settings);
-        } catch (NoSuchPortException | UnsupportedCommOperationException e) {
+        } catch (NoSuchPortException | UnsupportedCommOperationException | PortInUseException e) {
             throw new ConnectionException(e);
         }
     }
 
-    private void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException {
+    private void connect(ComPortSettings settings) throws NoSuchPortException, UnsupportedCommOperationException, PortInUseException {
         String port = settings.getPort();
 
         LOGGER.info("Connecting to port " + port);
@@ -159,7 +159,8 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
             inStream = serialPort.getInputStream();
 
         } catch (PortInUseException e) {
-            LOGGER.warning("Port " + port + " is already in use");
+            LOGGER.severe("Port " + port + " is already in use");
+            throw e;
         } catch (UnsupportedCommOperationException e) {
             LOGGER.severe("Unsupported com port params");
             disconnect();
