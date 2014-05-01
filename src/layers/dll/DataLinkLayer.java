@@ -3,6 +3,7 @@ package layers.dll;
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
 import layers.exceptions.ConnectionException;
+import layers.exceptions.LayerUnavailableException;
 import layers.exceptions.UnexpectedChatException;
 import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
@@ -18,27 +19,84 @@ public class DataLinkLayer implements IDataLinkLayer {
     private IApplicationLayer apl;
     private IPhysicalLayer phy;
 
-    private Queue<byte[]> queueToSend = new ConcurrentLinkedQueue<>();
+    private Queue<byte[]> framesToSend = new ConcurrentLinkedQueue<>();
+    private Queue<byte[]> systemFramesToSend = new ConcurrentLinkedQueue<>();
+
     private AtomicBoolean wasACK = new AtomicBoolean(true);
 
 
     private Thread sendingThread = new Thread(this::sendingThreadJob);
     private boolean sendingActive = false;
+    private static final int SENDING_DELAY = 100;
+    private static final int SENDING_TIMEOUT = 3000;
+    private static final int ACCESSING_PHY_TIMEOUT = 5000;
 
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
+    private int getSendingCycles() {
+        return SENDING_TIMEOUT / SENDING_DELAY;
+    }
+
+    private int getPhyAccessingCycles() {
+        return ACCESSING_PHY_TIMEOUT / SENDING_DELAY;
+    }
+
     private void sendingThreadJob() {
+        int sendingCycles = getSendingCycles();
+        int accessingCycles = getPhyAccessingCycles();
+
         while (sendingActive) {
-            if (!queueToSend.isEmpty() && canSend()) {
-                sendLastToPhy();
-                wasACK.set(false);
+            if (systemFramesToSend.isEmpty() && framesToSend.isEmpty()) {
+                sendingCycles = getSendingCycles();
+                accessingCycles = getPhyAccessingCycles();
             }
 
+            if (!systemFramesToSend.isEmpty()) {
+
+                if (getLowerLayer().readyToSend()) {
+                    accessingCycles = getPhyAccessingCycles();
+                    getLowerLayer().send(systemFramesToSend.poll());
+                }
+                else { // phy is unavailable
+                    accessingCycles -= 1;
+                }
+
+            }
+            else {
+
+                if (!framesToSend.isEmpty()) {
+                    if (getLowerLayer().readyToSend()) {
+                        accessingCycles = getPhyAccessingCycles();
+                        if (wasACK.get()) { // if we are permitted to send next frame
+                            sendingCycles = getSendingCycles();
+                            sendLastToPhy();
+                        }
+                        else {
+                            sendingCycles -= 1;
+                        }
+
+                        if (sendingCycles <= 0) {
+                            wasACK.set(true); // pretending that a frame has been delivered
+                        }
+                    }
+                    else { // phy is unavailable
+                        accessingCycles -= 1;
+                    }
+                }
+            }
+
+            if (accessingCycles <= 0) {
+                notifyOnError(new LayerUnavailableException("Physical layer was unavailable for " + ACCESSING_PHY_TIMEOUT + "ms"));
+                sendingActive = false; // TODO: not sure
+            }
+
+
             try {
-                Thread.sleep(200);
+                Thread.sleep(SENDING_DELAY);
             } catch (InterruptedException ignored) {
                 sendingActive = false;
             }
+
         }
     }
 
@@ -52,7 +110,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     @Override
     public void disconnect() {
         sendingActive = false;
-        queueToSend.clear();
+        framesToSend.clear();
         wasACK.set(true);
         getLowerLayer().disconnect();
     }
@@ -60,7 +118,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     @Override
     public void send(byte[] data) {
         Frame frame = new Frame(Frame.Type.I, data);
-        queueToSend.add(frame.serialize());
+        framesToSend.add(frame.serialize());
     }
 
     @Override
@@ -68,11 +126,11 @@ public class DataLinkLayer implements IDataLinkLayer {
         Frame frame = Frame.deserialize(data);
 
         if (frame.isACK()) {
-            if (queueToSend.isEmpty()) {
+            if (framesToSend.isEmpty()) {
                 notifyOnError(new UnexpectedChatException("Frame queue is empty"));
                 return;
             }
-            queueToSend.poll();
+            framesToSend.poll();
             wasACK.set(true);
         }
         else if (frame.isRET()) {
@@ -82,14 +140,14 @@ public class DataLinkLayer implements IDataLinkLayer {
             if (frame.isCorrect()) {
                 Frame ack = new Frame(Frame.Type.S, new byte[0]);
                 ack.setACK(true);
-                getLowerLayer().send(ack.serialize());
+                systemFramesToSend.add(ack.serialize());
 
                 apl.receive(frame.getMsg());
             }
             else {
                 Frame ret = new Frame(Frame.Type.S, new byte[0]);
                 ret.setRET(true);
-                getLowerLayer().send(ret.serialize());
+                systemFramesToSend.add(ret.serialize());
             }
         }
     }
@@ -119,12 +177,12 @@ public class DataLinkLayer implements IDataLinkLayer {
         onErrorListeners.add(listener);
     }
 
-    private void notifyOnError(Exception e) {
+    private synchronized void notifyOnError(Exception e) {
         onErrorListeners.forEach(listener -> listener.accept(e));
     }
 
     private void sendLastToPhy() {
-        phy.send(queueToSend.peek());
+        phy.send(framesToSend.peek());
         wasACK.set(false);
     }
 

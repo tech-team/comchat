@@ -218,7 +218,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
-    public void send(byte[] data) {
+    public synchronized void send(byte[] data) {
         System.out.println("ready? - " + readyToSend());
         serialPort.setRTS(false);
         try {
