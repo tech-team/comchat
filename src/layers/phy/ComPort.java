@@ -86,25 +86,19 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     public static List<String> getAvailableDataBits() {
         List<String> names = new LinkedList<>();
-        stream(DataBitsEnum.values()).forEach(e -> {
-            names.add(e.toString());
-        });
+        stream(DataBitsEnum.values()).forEach(e -> names.add(e.toString()));
         return names;
     }
 
     public static List<String> getAvailableStopBits() {
         List<String> names = new LinkedList<>();
-        stream(StopBitsEnum.values()).forEach(e -> {
-            names.add(e.toString());
-        });
+        stream(StopBitsEnum.values()).forEach(e -> names.add(e.toString()));
         return names;
     }
 
     public static List<String> getAvailableParity() {
         List<String> names = new LinkedList<>();
-        stream(ParityEnum.values()).forEach(e -> {
-            names.add(e.toString());
-        });
+        stream(ParityEnum.values()).forEach(e -> names.add(e.toString()));
         return names;
     }
 
@@ -227,6 +221,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         } catch (IOException e) {
             LOGGER.warning("Exception occurred: " + e.getMessage());
             notifyOnError(e);
+            return;
         }
         try {
             outStream.flush();

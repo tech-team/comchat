@@ -20,8 +20,15 @@ public class Frame extends PDU {
         }
     }
 
-    private byte ACK = 0;
-    private byte RET = 0;
+    public static final int MAX_SIZE = 128;
+    public static final int MAX_MSG_SIZE = MAX_SIZE - 2;
+
+
+    private boolean ACK = false;
+    private boolean RET = false;
+    private boolean CHUNKS = false;
+    private boolean END_CHUNKS = false;
+
 
 
     private Type type;
@@ -49,6 +56,21 @@ public class Frame extends PDU {
         return frame;
     }
 
+    public static Frame newCHUNKEDFrame(byte[] chunk) {
+        Frame frame = new Frame(Type.I, chunk);
+        frame.setCHUNKS(true);
+        return frame;
+    }
+
+    public static Frame newChunkEndFrame(byte[] chunk) {
+        Frame frame = new Frame(Type.I, chunk);
+        frame.setCHUNKS(true);
+        frame.setEND_CHUNKS(true);
+        return frame;
+    }
+
+
+
     public Type getType() {
         return type;
     }
@@ -58,36 +80,67 @@ public class Frame extends PDU {
     }
 
     public boolean isACK() {
-        return ACK == 1;
+        return ACK;
     }
 
     public boolean isRET() {
-        return RET == 1;
+        return RET;
     }
 
-
-    private void setACK(byte value) {
-        ACK = (byte) (value == 0 ? 0 : 1);
+    public boolean isCHUNK() {
+        return CHUNKS;
     }
+
+    public boolean isEND_CHUNKS() {
+        return END_CHUNKS;
+    }
+
 
     private void setACK(boolean value) {
-        ACK = (byte) (value ? 1 : 0);
-    }
-
-    private void setRET(byte value) {
-        RET = (byte) (value == 0 ? 0 : 1);
+        ACK = value;
     }
 
     private void setRET(boolean value) {
-        RET = (byte) (value ? 1 : 0);
+        RET = value;
+    }
+
+    private void setCHUNKS(boolean value) {
+        CHUNKS = value;
+    }
+
+    private void setEND_CHUNKS(boolean value) {
+        END_CHUNKS = value;
+    }
+
+
+
+    private byte getACK() {
+        return (byte) (ACK ? 1 : 0);
+    }
+
+    private byte getRET() {
+        return (byte) (RET ? 1 : 0);
+    }
+
+    private byte getCHUNKS() {
+        return (byte) (CHUNKS ? 1 : 0);
+    }
+
+    private byte getEND_CHUNKS() {
+        return (byte) (END_CHUNKS ? 1 : 0);
     }
 
     public byte[] serialize() {
         byte typeByte = (byte) type.ordinal();
 
-        byte supervisorInfoByte = ACK;
+        byte supervisorInfoByte = getACK();
         supervisorInfoByte <<= 1;
-        supervisorInfoByte += RET;
+        supervisorInfoByte += getRET();
+        supervisorInfoByte <<= 1;
+        supervisorInfoByte += getCHUNKS();
+        supervisorInfoByte <<= 1;
+        supervisorInfoByte += getEND_CHUNKS();
+
 
         byte[] infoBytes = new byte[2];
         infoBytes[0] = typeByte;
@@ -109,6 +162,10 @@ public class Frame extends PDU {
 
         byte supervisorInfoByte = data[1];
         byte mask = 0x01;
+        byte END_CHUNKS = (byte) (supervisorInfoByte & mask);
+        supervisorInfoByte >>= 1;
+        byte CHUNKS = (byte) (supervisorInfoByte & mask);
+        supervisorInfoByte >>= 1;
         byte RET = (byte) (supervisorInfoByte & mask);
         supervisorInfoByte >>= 1;
         byte ACK = (byte) (supervisorInfoByte & mask);
@@ -116,11 +173,16 @@ public class Frame extends PDU {
         byte[] msg = Arrays.copyOfRange(data, 2, data.length);
 
         Frame frame = new Frame(type, msg);
-        frame.setACK(ACK);
-        frame.setRET(RET);
+        frame.setACK(ACK != 0);
+        frame.setRET(RET != 0);
+        frame.setCHUNKS(CHUNKS != 0);
+        frame.setEND_CHUNKS(END_CHUNKS != 0);
 
         return frame;
     }
+
+
+
 
 
     public boolean isCorrect() {

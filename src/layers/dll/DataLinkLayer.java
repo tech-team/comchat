@@ -7,7 +7,9 @@ import layers.exceptions.LayerUnavailableException;
 import layers.exceptions.UnexpectedChatException;
 import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
+import util.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -21,6 +23,9 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     private Queue<byte[]> framesToSend = new ConcurrentLinkedQueue<>();
     private Queue<byte[]> systemFramesToSend = new ConcurrentLinkedQueue<>();
+
+    private List<byte[]> receivedChunkMessages = new LinkedList<>();
+
 
     private boolean remoteUserConnected = false;
     private AtomicBoolean wasACK = new AtomicBoolean(true);
@@ -43,63 +48,57 @@ public class DataLinkLayer implements IDataLinkLayer {
         return ACCESSING_PHY_TIMEOUT / SENDING_DELAY;
     }
 
-
-    private void sendingThreadJob(Integer sendingCycles, Integer accessingCycles) {
-        if (systemFramesToSend.isEmpty() && framesToSend.isEmpty()) {
-            sendingCycles = getSendingCycles();
-            accessingCycles = getPhyAccessingCycles();
-        }
-
-        if (!systemFramesToSend.isEmpty()) {
-
-            if (getLowerLayer().readyToSend()) {
-                accessingCycles = getPhyAccessingCycles();
-                getLowerLayer().send(systemFramesToSend.poll());
-            }
-            else { // phy is unavailable
-                accessingCycles -= 1;
-            }
-
-        }
-        else {
-
-            if (!framesToSend.isEmpty()) {
-                if (getLowerLayer().readyToSend()) {
-                    accessingCycles = getPhyAccessingCycles();
-                    if (wasACK.get()) { // if we are permitted to send next frame
-                        sendingCycles = getSendingCycles();
-                        sendLastToPhy();
-                    }
-                    else {
-                        sendingCycles -= 1;
-                    }
-
-                    if (sendingCycles <= 0) {
-                        wasACK.set(true); // pretending that a frame has been delivered
-                        sendingCycles = getSendingCycles();
-                    }
-                }
-                else { // phy is unavailable
-                    accessingCycles -= 1;
-                }
-            }
-        }
-
-        if (accessingCycles <= 0 && remoteUserConnected) {
-            System.out.println("onError");
-            notifyOnError(new LayerUnavailableException("Physical layer was unavailable for " + ACCESSING_PHY_TIMEOUT + "ms"));
-//            sendingActive = false; // TODO: not sure
-        }
-    }
-
     private void sendingThreadJob() {
         int sendingCycles = getSendingCycles();
         int accessingCycles = getPhyAccessingCycles();
 
         while (sendingActive) {
-//            System.out.println("remoteUserConnected: " + remoteUserConnected);
 
-            sendingThreadJob(sendingCycles, accessingCycles);
+            if (systemFramesToSend.isEmpty() && framesToSend.isEmpty()) {
+                sendingCycles = getSendingCycles();
+                accessingCycles = getPhyAccessingCycles();
+            }
+
+            if (!systemFramesToSend.isEmpty()) {
+
+                if (getLowerLayer().readyToSend()) {
+                    accessingCycles = getPhyAccessingCycles();
+                    getLowerLayer().send(systemFramesToSend.poll());
+                }
+                else { // phy is unavailable
+                    accessingCycles -= 1;
+                }
+
+            }
+            else {
+
+                if (!framesToSend.isEmpty()) {
+                    if (getLowerLayer().readyToSend()) {
+                        accessingCycles = getPhyAccessingCycles();
+                        if (wasACK.get()) { // if we are permitted to send next frame
+                            sendingCycles = getSendingCycles();
+                            sendLastToPhy();
+                        }
+                        else {
+                            sendingCycles -= 1;
+                        }
+
+                        if (sendingCycles <= 0) {
+                            wasACK.set(true); // pretending that a frame has been delivered
+                            sendingCycles = getSendingCycles();
+                        }
+                    }
+                    else { // phy is unavailable
+                        accessingCycles -= 1;
+                    }
+                }
+            }
+
+            if (accessingCycles <= 0 && remoteUserConnected) {
+                System.out.println("onError");
+                notifyOnError(new LayerUnavailableException("Physical layer was unavailable for " + ACCESSING_PHY_TIMEOUT + "ms"));
+//            sendingActive = false; // TODO: not sure
+            }
 
             try {
                 Thread.sleep(SENDING_DELAY);
@@ -127,8 +126,20 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void send(byte[] data) {
-        Frame frame = new Frame(data);
-        framesToSend.add(frame.serialize());
+        int chunks = (int) Math.ceil((double) data.length / (double) Frame.MAX_MSG_SIZE);
+        for (int i = 0; i < chunks; ++i) {
+            int minIndex = Frame.MAX_MSG_SIZE * i;
+            int maxSize = Math.min(Frame.MAX_MSG_SIZE, data.length - minIndex);
+            byte[] chunk = Arrays.copyOfRange(data, minIndex, minIndex + maxSize);
+            Frame frameChunk;
+            if (i < chunks - 1) {
+                frameChunk = Frame.newCHUNKEDFrame(chunk);
+            }
+            else {
+                frameChunk = Frame.newChunkEndFrame(chunk);
+            }
+            framesToSend.add(frameChunk.serialize());
+        }
     }
 
     @Override
@@ -151,7 +162,16 @@ public class DataLinkLayer implements IDataLinkLayer {
                 Frame ack = Frame.newACKFrame();
                 systemFramesToSend.add(ack.serialize());
 
-                apl.receive(frame.getMsg());
+
+                receivedChunkMessages.add(frame.getMsg());
+                if (frame.isEND_CHUNKS()) {
+                    byte[] resultedMsg = new byte[0];
+                    for (byte[] chunk : receivedChunkMessages) {
+                        resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
+                    }
+                    receivedChunkMessages.clear();
+                    apl.receive(resultedMsg);
+                }
             }
             else {
                 Frame ret = Frame.newRETFrame();
