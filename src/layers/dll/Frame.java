@@ -180,11 +180,6 @@ public class Frame extends PDU {
     }
 
 
-
-    public boolean isCorrect() {
-        return true; // TODO
-    }
-
 /*    private static BitSet division(BitSet x) {
         BitSet res = new BitSet(7);
         for (int i = 0; i < 4; ++i) {
