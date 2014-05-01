@@ -1,7 +1,6 @@
 package layers.dll;
 
 import layers.PDU;
-import layers.exceptions.DeserializationException;
 import util.ArrayUtils;
 
 import java.nio.ByteBuffer;
@@ -152,17 +151,12 @@ public class Frame extends PDU {
         return ArrayUtils.concatenate(size, frame);
     }
 
-    public static Frame deserialize(byte[] data) throws DeserializationException {
-        if (!isCorrect(data))
-            throw new DeserializationException("Data is corrupted");
-
+    public static Frame deserialize(byte[] data) {
         byte typeByte = data[0];
         Type type = null;
         try {
             type = Type.fromInteger(typeByte);
-        } catch (Exception e) {
-            e.printStackTrace(); // TODO: review
-        }
+        } catch (Exception ignored) {}
 
         byte supervisorInfoByte = data[1];
         byte mask = 0x01;
@@ -187,9 +181,7 @@ public class Frame extends PDU {
 
 
 
-
-
-    private static boolean isCorrect(byte[] data) {
+    public boolean isCorrect() {
         return true; // TODO
     }
 
