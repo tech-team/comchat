@@ -7,9 +7,12 @@ import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class DataLinkLayer implements IDataLinkLayer {
     private IApplicationLayer apl;
@@ -22,10 +25,12 @@ public class DataLinkLayer implements IDataLinkLayer {
     private Thread sendingThread = new Thread(this::sendingThreadJob);
     private boolean sendingActive = false;
 
+    private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
+
     private void sendingThreadJob() {
         while (sendingActive) {
             if (!queueToSend.isEmpty() && canSend()) {
-                // PROTO: sendLastToPhy();
+                sendLastToPhy();
                 wasACK.set(false);
             }
         }
@@ -65,7 +70,7 @@ public class DataLinkLayer implements IDataLinkLayer {
             queueToSend.poll();
         }
         else if (frame.isRET()) {
-            // PROTO: sendLastToPhy();
+            sendLastToPhy();
         }
         else {
             if (frame.isCorrect()) {
@@ -78,7 +83,7 @@ public class DataLinkLayer implements IDataLinkLayer {
                 Frame ret = new Frame(Frame.Type.S, new byte[0]);
                 ret.setRET(true);
 
-                // PROTO: getLowerLayer().send(ret.serialize());
+                getLowerLayer().send(ret.serialize());
             }
         }
     }
@@ -103,7 +108,16 @@ public class DataLinkLayer implements IDataLinkLayer {
         phy = (IPhysicalLayer) layer;
     }
 
-    private void sendLastToPhy() throws IOException {
+    @Override
+    public void subscribeOnError(Consumer<Exception> listener) {
+        onErrorListeners.add(listener);
+    }
+
+    private void notifyOnError(Exception e) {
+        onErrorListeners.forEach(listener -> listener.accept(e));
+    }
+
+    private void sendLastToPhy() {
         phy.send(queueToSend.peek());
         wasACK.set(false);
     }

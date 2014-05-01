@@ -1,8 +1,12 @@
 package layers;
 
+import java.util.function.Consumer;
+
 public interface ILayer {
-    public ILayer getUpperLayer();
-    public ILayer getLowerLayer();
-    public void setUpperLayer(ILayer layer);
-    public void setLowerLayer(ILayer layer);
+    ILayer getUpperLayer();
+    ILayer getLowerLayer();
+    void setUpperLayer(ILayer layer);
+    void setLowerLayer(ILayer layer);
+
+    void subscribeOnError(Consumer<Exception> listener);
 }

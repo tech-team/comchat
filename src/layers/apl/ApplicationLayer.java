@@ -15,6 +15,8 @@ public class ApplicationLayer implements IApplicationLayer {
     private IDataLinkLayer dll;
     private List<Consumer<Message>> receivers = new LinkedList<>();
 
+    private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
+
     @Override
     public ILayer getUpperLayer() {
         return null;
@@ -32,6 +34,15 @@ public class ApplicationLayer implements IApplicationLayer {
     @Override
     public void setLowerLayer(ILayer layer) {
         dll = (IDataLinkLayer) layer;
+    }
+
+    @Override
+    public void subscribeOnError(Consumer<Exception> listener) {
+        onErrorListeners.add(listener);
+    }
+
+    private void notifyOnError(Exception e) {
+        onErrorListeners.forEach(listener -> listener.accept(e));
     }
 
     @Override

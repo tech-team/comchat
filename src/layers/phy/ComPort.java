@@ -260,6 +260,11 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
+    public void subscribeOnError(Consumer<Exception> listener) {
+        onErrorListeners.add(listener);
+    }
+
+    @Override
     public void subscribeConnectionStatusChanged(Consumer<Boolean> listener) {
         connectionChangedListeners.add(listener);
     }

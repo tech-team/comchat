@@ -10,7 +10,7 @@ public interface IPhysicalLayer extends ILayer {
     boolean isConnected();
     void connect(PhysicalLayerSettings settings) throws ConnectionException;
     void disconnect();
-    public boolean readyToSend();
+    boolean readyToSend();
     void send(byte[] data);
     void subscribeConnectionStatusChanged(Consumer<Boolean> listener);
 }
