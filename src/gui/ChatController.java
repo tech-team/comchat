@@ -73,7 +73,7 @@ public class ChatController extends DataController {
 
             if (action == Dialog.Actions.YES) {
                 if (status == Status.Connected)
-                    protocolStack.getApl().disconnect();
+                    gracefulDisconnect();
             } else
                 e.consume();
         });
@@ -162,7 +162,7 @@ public class ChatController extends DataController {
                     break;
                 case Term:
                     addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
-                    //TODO: send Term
+                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
                     break;
                 case TermAck:
                     //TODO: interface though all the layers?
@@ -231,7 +231,14 @@ public class ChatController extends DataController {
 
     public void onMenuDisconnect(ActionEvent event) {
         if (status == Status.Connected)
-            protocolStack.getApl().disconnect();
+            gracefulDisconnect();
+    }
+
+    private void gracefulDisconnect() {
+        if (true) { // TODO: we need a condition to be sure that we have somebody to send a TERM message
+            protocolStack.getApl().send(Message.Type.Term, "");
+        }
+        protocolStack.getApl().disconnect();
     }
 
     private String getHtmlPage() {
