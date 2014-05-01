@@ -27,7 +27,7 @@ public class Frame extends PDU {
     private Type type;
     private byte[] msg;
 
-    public Frame(Type type, byte[] msg) {
+    private Frame(Type type, byte[] msg) {
         this.type = type;
         this.msg = msg;
     }
@@ -35,6 +35,18 @@ public class Frame extends PDU {
     public Frame(byte[] msg) {
         this.type = Type.I;
         this.msg = msg;
+    }
+
+    public static Frame newACKFrame() {
+        Frame frame = new Frame(Type.S, new byte[0]);
+        frame.setACK(true);
+        return frame;
+    }
+
+    public static Frame newRETFrame() {
+        Frame frame = new Frame(Type.S, new byte[0]);
+        frame.setRET(true);
+        return frame;
     }
 
     public Type getType() {
@@ -54,19 +66,19 @@ public class Frame extends PDU {
     }
 
 
-    public void setACK(byte value) {
+    private void setACK(byte value) {
         ACK = (byte) (value == 0 ? 0 : 1);
     }
 
-    public void setACK(boolean value) {
+    private void setACK(boolean value) {
         ACK = (byte) (value ? 1 : 0);
     }
 
-    public void setRET(byte value) {
+    private void setRET(byte value) {
         RET = (byte) (value == 0 ? 0 : 1);
     }
 
-    public void setRET(boolean value) {
+    private void setRET(boolean value) {
         RET = (byte) (value ? 1 : 0);
     }
 

@@ -127,7 +127,7 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void send(byte[] data) {
-        Frame frame = new Frame(Frame.Type.I, data);
+        Frame frame = new Frame(data);
         framesToSend.add(frame.serialize());
     }
 
@@ -148,15 +148,13 @@ public class DataLinkLayer implements IDataLinkLayer {
         }
         else {
             if (frame.isCorrect()) {
-                Frame ack = new Frame(Frame.Type.S, new byte[0]);
-                ack.setACK(true);
+                Frame ack = Frame.newACKFrame();
                 systemFramesToSend.add(ack.serialize());
 
                 apl.receive(frame.getMsg());
             }
             else {
-                Frame ret = new Frame(Frame.Type.S, new byte[0]);
-                ret.setRET(true);
+                Frame ret = Frame.newRETFrame();
                 systemFramesToSend.add(ret.serialize());
             }
         }
