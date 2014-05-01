@@ -18,7 +18,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import layers.ProtocolStack;
-import layers.SerializationException;
 import layers.apl.Message;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
@@ -74,7 +73,7 @@ public class ChatController extends DataController {
 
             if (action == Dialog.Actions.YES) {
                 if (status == Status.Connected)
-                    protocolStack.getPhy().disconnect();
+                    protocolStack.getApl().disconnect();
             } else
                 e.consume();
         });
@@ -135,11 +134,7 @@ public class ChatController extends DataController {
     private void send() {
         String message = inputField.getText();
 
-        try {
-            protocolStack.getApl().send(Message.Type.Msg, message);
-        } catch (SerializationException | IOException e) { //TODO: IOException should be gone
-            e.printStackTrace();
-        }
+        protocolStack.getApl().send(Message.Type.Msg, message);
 
         addUserMessage(localUser, message);
         inputField.clear();
@@ -169,7 +164,7 @@ public class ChatController extends DataController {
                 case TermAck:
                     //TODO: interface though all the layers?
                     addSystemMessage(MessageLevel.Info, "Termination confirmed");
-                    protocolStack.getPhy().disconnect();
+                    protocolStack.getApl().disconnect();
                     addSystemMessage(MessageLevel.Info, "Disconnected");
                     break;
                 default:
@@ -233,7 +228,7 @@ public class ChatController extends DataController {
 
     public void onMenuDisconnect(ActionEvent event) {
         if (status == Status.Connected)
-            protocolStack.getPhy().disconnect();
+            protocolStack.getApl().disconnect();
     }
 
     private String getHtmlPage() {

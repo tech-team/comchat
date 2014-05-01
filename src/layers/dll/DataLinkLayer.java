@@ -3,10 +3,10 @@ package layers.dll;
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
 import layers.exceptions.ConnectionException;
+import layers.exceptions.UnexpectedChatException;
 import layers.phy.IPhysicalLayer;
 import layers.phy.settings.PhysicalLayerSettings;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -19,7 +19,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     private IPhysicalLayer phy;
 
     private Queue<byte[]> queueToSend = new ConcurrentLinkedQueue<>();
-    private AtomicBoolean wasACK = new AtomicBoolean(false);
+    private AtomicBoolean wasACK = new AtomicBoolean(true);
 
 
     private Thread sendingThread = new Thread(this::sendingThreadJob);
@@ -32,6 +32,12 @@ public class DataLinkLayer implements IDataLinkLayer {
             if (!queueToSend.isEmpty() && canSend()) {
                 sendLastToPhy();
                 wasACK.set(false);
+            }
+
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ignored) {
+                sendingActive = false;
             }
         }
     }
@@ -52,8 +58,8 @@ public class DataLinkLayer implements IDataLinkLayer {
     }
 
     @Override
-    public void send(byte[] msg) throws IOException {
-        Frame frame = new Frame(Frame.Type.I, msg);
+    public void send(byte[] data) {
+        Frame frame = new Frame(Frame.Type.I, data);
         queueToSend.add(frame.serialize());
     }
 
@@ -62,12 +68,13 @@ public class DataLinkLayer implements IDataLinkLayer {
         Frame frame = Frame.deserialize(data);
 
         if (frame.isACK()) {
-            wasACK.set(true);
             if (queueToSend.isEmpty()) {
-                //TODO: send error
+                notifyOnError(new UnexpectedChatException("Frame queue is empty"));
                 return;
             }
             queueToSend.poll();
+            wasACK.set(true);
+            System.out.println("Received ACK");
         }
         else if (frame.isRET()) {
             sendLastToPhy();
@@ -76,13 +83,13 @@ public class DataLinkLayer implements IDataLinkLayer {
             if (frame.isCorrect()) {
                 Frame ack = new Frame(Frame.Type.S, new byte[0]);
                 ack.setACK(true);
+                getLowerLayer().send(ack.serialize());
 
                 apl.receive(frame.getMsg());
             }
             else {
                 Frame ret = new Frame(Frame.Type.S, new byte[0]);
                 ret.setRET(true);
-
                 getLowerLayer().send(ret.serialize());
             }
         }
