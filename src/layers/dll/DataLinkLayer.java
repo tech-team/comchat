@@ -3,7 +3,6 @@ package layers.dll;
 import layers.ILayer;
 import layers.apl.IApplicationLayer;
 import layers.exceptions.ConnectionException;
-import layers.exceptions.DeserializationException;
 import layers.exceptions.LayerUnavailableException;
 import layers.exceptions.UnexpectedChatException;
 import layers.phy.IPhysicalLayer;
@@ -79,9 +78,11 @@ public class DataLinkLayer implements IDataLinkLayer {
                     if (getLowerLayer().readyToSend()) {
                         accessingCycles = getPhyAccessingCycles();
                         if (forceSending.get() || wasACK.get()) { // if we are permitted to send next frame
-                            forceSending.set(false);
                             sendingCycles = getSendingCycles();
-                            sendLastToPhy();
+
+                            getLowerLayer().send(framesToSend.peek());
+                            wasACK.set(false);
+                            forceSending.set(false);
                         }
                         else {
                             sendingCycles -= 1;
@@ -148,14 +149,7 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void receive(byte[] data) {
-        Frame frame;
-        try {
-            frame = Frame.deserialize(data);
-        } catch (DeserializationException ignored) {
-            Frame ret = Frame.newRETFrame();
-            systemFramesToSend.add(ret.serialize());
-            return;
-        }
+        Frame frame = Frame.deserialize(data);
 
         if (frame.isACK()) {
             if (framesToSend.isEmpty()) {
@@ -169,19 +163,24 @@ public class DataLinkLayer implements IDataLinkLayer {
             forceSend();
         }
         else {
+            if (frame.isCorrect()) {
+                Frame ack = Frame.newACKFrame();
+                systemFramesToSend.add(ack.serialize());
 
-            Frame ack = Frame.newACKFrame();
-            systemFramesToSend.add(ack.serialize());
 
-
-            receivedChunkMessages.add(frame.getMsg());
-            if (frame.isEND_CHUNKS()) {
-                byte[] resultedMsg = new byte[0];
-                for (byte[] chunk : receivedChunkMessages) {
-                    resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
+                receivedChunkMessages.add(frame.getMsg());
+                if (frame.isEND_CHUNKS()) {
+                    byte[] resultedMsg = new byte[0];
+                    for (byte[] chunk : receivedChunkMessages) {
+                        resultedMsg = ArrayUtils.concatenate(resultedMsg, chunk);
+                    }
+                    receivedChunkMessages.clear();
+                    apl.receive(resultedMsg);
                 }
-                receivedChunkMessages.clear();
-                apl.receive(resultedMsg);
+            }
+            else {
+                Frame ret = Frame.newRETFrame();
+                systemFramesToSend.add(ret.serialize());
             }
 
         }
