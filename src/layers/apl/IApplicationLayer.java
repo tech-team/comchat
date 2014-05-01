@@ -12,4 +12,6 @@ public interface IApplicationLayer extends ILayer {
     void send(Message.Type type, String msg);
     void receive(byte[] data);
     void subscribeToReceive(final Consumer<Message> receiver);
+
+    void handshakeFinished();
 }

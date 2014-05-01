@@ -84,13 +84,12 @@ public class ChatController extends DataController {
     }
 
     private void updateStatus(boolean connected) {
-        if (connected) {
-            protocolStack.getApl().send(Message.Type.Auth, localUser); // TODO: not sure if this should be here
-        }
-        status = Status.fromBoolean(connected);
-        statusIcon.setFill(status.toColor());
-        statusText.setText(status.toString());
-        sendButton.setDisable(!connected);
+        Platform.runLater(() -> {
+            status = Status.fromBoolean(connected);
+            statusIcon.setFill(status.toColor());
+            statusText.setText(status.toString());
+            sendButton.setDisable(!connected);
+        });
     }
 
     private void addUserMessage(String author, String message) {
@@ -155,6 +154,7 @@ public class ChatController extends DataController {
                 case Auth:
                     remoteUser = message.getMsg();
                     addSystemMessage(MessageLevel.Info, "Remote user connected: " + message.getMsg());
+                    protocolStack.getApl().handshakeFinished();
                     //TODO: enable "sendability"
                     break;
                 case Ack:
@@ -162,7 +162,7 @@ public class ChatController extends DataController {
                     break;
                 case Term:
                     addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
-                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
+//                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
                     break;
                 case TermAck:
                     //TODO: interface though all the layers?
@@ -208,7 +208,8 @@ public class ChatController extends DataController {
                 Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
 
                 localUser = (String) connectionStage.getResultData();
-
+                protocolStack.getApl().send(Message.Type.Auth, localUser);
+                //TODO: no need because of statusChanged callback
                 statusIcon.setFill(Status.Connected.toColor());
                 statusText.setText(Status.Connected.toString());
             } else {
@@ -235,9 +236,9 @@ public class ChatController extends DataController {
     }
 
     private void gracefulDisconnect() {
-        if (true) { // TODO: we need a condition to be sure that we have somebody to send a TERM message
-            protocolStack.getApl().send(Message.Type.Term, "");
-        }
+//        if (true) { // TODO: we need a condition to be sure that we have somebody to send a TERM message
+//            protocolStack.getApl().send(Message.Type.Term, "");
+//        }
         protocolStack.getApl().disconnect();
     }
 

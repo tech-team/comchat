@@ -71,4 +71,9 @@ public class ApplicationLayer implements IApplicationLayer {
     public void subscribeToReceive(final Consumer<Message> receiver) {
         receivers.add(receiver);
     }
+
+    @Override
+    public void handshakeFinished() {
+        getLowerLayer().handshakeFinished();
+    }
 }

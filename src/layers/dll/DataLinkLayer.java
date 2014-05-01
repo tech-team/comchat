@@ -22,6 +22,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     private Queue<byte[]> framesToSend = new ConcurrentLinkedQueue<>();
     private Queue<byte[]> systemFramesToSend = new ConcurrentLinkedQueue<>();
 
+    private boolean remoteUserConnected = false;
     private AtomicBoolean wasACK = new AtomicBoolean(true);
 
 
@@ -33,6 +34,7 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
+
     private int getSendingCycles() {
         return SENDING_TIMEOUT / SENDING_DELAY;
     }
@@ -41,55 +43,63 @@ public class DataLinkLayer implements IDataLinkLayer {
         return ACCESSING_PHY_TIMEOUT / SENDING_DELAY;
     }
 
+
+    private void sendingThreadJob(Integer sendingCycles, Integer accessingCycles) {
+        if (systemFramesToSend.isEmpty() && framesToSend.isEmpty()) {
+            sendingCycles = getSendingCycles();
+            accessingCycles = getPhyAccessingCycles();
+        }
+
+        if (!systemFramesToSend.isEmpty()) {
+
+            if (getLowerLayer().readyToSend()) {
+                accessingCycles = getPhyAccessingCycles();
+                getLowerLayer().send(systemFramesToSend.poll());
+            }
+            else { // phy is unavailable
+                accessingCycles -= 1;
+            }
+
+        }
+        else {
+
+            if (!framesToSend.isEmpty()) {
+                if (getLowerLayer().readyToSend()) {
+                    accessingCycles = getPhyAccessingCycles();
+                    if (wasACK.get()) { // if we are permitted to send next frame
+                        sendingCycles = getSendingCycles();
+                        sendLastToPhy();
+                    }
+                    else {
+                        sendingCycles -= 1;
+                    }
+
+                    if (sendingCycles <= 0) {
+                        wasACK.set(true); // pretending that a frame has been delivered
+                        sendingCycles = getSendingCycles();
+                    }
+                }
+                else { // phy is unavailable
+                    accessingCycles -= 1;
+                }
+            }
+        }
+
+        if (accessingCycles <= 0 && remoteUserConnected) {
+            System.out.println("onError");
+            notifyOnError(new LayerUnavailableException("Physical layer was unavailable for " + ACCESSING_PHY_TIMEOUT + "ms"));
+//            sendingActive = false; // TODO: not sure
+        }
+    }
+
     private void sendingThreadJob() {
         int sendingCycles = getSendingCycles();
         int accessingCycles = getPhyAccessingCycles();
 
         while (sendingActive) {
-            if (systemFramesToSend.isEmpty() && framesToSend.isEmpty()) {
-                sendingCycles = getSendingCycles();
-                accessingCycles = getPhyAccessingCycles();
-            }
+//            System.out.println("remoteUserConnected: " + remoteUserConnected);
 
-            if (!systemFramesToSend.isEmpty()) {
-
-                if (getLowerLayer().readyToSend()) {
-                    accessingCycles = getPhyAccessingCycles();
-                    getLowerLayer().send(systemFramesToSend.poll());
-                }
-                else { // phy is unavailable
-                    accessingCycles -= 1;
-                }
-
-            }
-            else {
-
-                if (!framesToSend.isEmpty()) {
-                    if (getLowerLayer().readyToSend()) {
-                        accessingCycles = getPhyAccessingCycles();
-                        if (wasACK.get()) { // if we are permitted to send next frame
-                            sendingCycles = getSendingCycles();
-                            sendLastToPhy();
-                        }
-                        else {
-                            sendingCycles -= 1;
-                        }
-
-                        if (sendingCycles <= 0) {
-                            wasACK.set(true); // pretending that a frame has been delivered
-                        }
-                    }
-                    else { // phy is unavailable
-                        accessingCycles -= 1;
-                    }
-                }
-            }
-
-            if (accessingCycles <= 0) {
-                notifyOnError(new LayerUnavailableException("Physical layer was unavailable for " + ACCESSING_PHY_TIMEOUT + "ms"));
-                sendingActive = false; // TODO: not sure
-            }
-
+            sendingThreadJob(sendingCycles, accessingCycles);
 
             try {
                 Thread.sleep(SENDING_DELAY);
@@ -150,6 +160,11 @@ public class DataLinkLayer implements IDataLinkLayer {
                 systemFramesToSend.add(ret.serialize());
             }
         }
+    }
+
+    @Override
+    public void handshakeFinished() {
+        remoteUserConnected = true;
     }
 
     @Override

@@ -9,4 +9,6 @@ public interface IDataLinkLayer extends ILayer {
     void disconnect();
     void send(byte[] msg);
     void receive(byte[] data);
+
+    void handshakeFinished();
 }
