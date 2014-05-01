@@ -84,11 +84,26 @@ public class ChatController extends DataController {
     }
 
     private void updateStatus(boolean connected) {
+        Status newStatus = Status.fromBoolean(connected);
+        if (status == newStatus)
+            return;
+
         Platform.runLater(() -> {
-            status = Status.fromBoolean(connected);
+            status = newStatus;
             statusIcon.setFill(status.toColor());
             statusText.setText(status.toString());
             sendButton.setDisable(!connected);
+
+            if (status == Status.NotConnected) {
+                protocolStack.getApl().disconnect();
+                addSystemMessage(MessageLevel.Info, "Connection lost");
+                Dialogs.create()
+                        .owner(stage)
+                        .title(PROGRAM_NAME)
+                        .masthead("Information")
+                        .message("Connection lost")
+                        .showInformation();
+            }
         });
     }
 
