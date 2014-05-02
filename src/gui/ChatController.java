@@ -58,6 +58,8 @@ public class ChatController extends DataController {
     private static final String messageReceived = "[«] ";
     private static final String messageAck = "[»] ";
 
+    private boolean isConnected = false;
+
     private Integer messageId = 0;
 
     private HashMap<Integer, Integer> messageIdToHtmlId = new HashMap<>();
@@ -98,6 +100,7 @@ public class ChatController extends DataController {
     }
 
     private void updateStatus(boolean connected) {
+        this.isConnected = connected;
         Status newStatus = Status.fromBoolean(connected);
         if (status == newStatus)
             return;
@@ -123,6 +126,9 @@ public class ChatController extends DataController {
     }
 
     private void updateCompanionStatus(boolean connected) {
+        if (!this.isConnected)
+            return;
+
         Status newStatus = connected ? Status.Chatting : Status.Connected;
 
         if (status != newStatus) {
@@ -131,8 +137,10 @@ public class ChatController extends DataController {
                 protocolStack.getApl().send(Message.Type.Auth, localUser);
                 isAuthorized = true;
             }
-            else
+            else if (status == Status.Chatting) {
+                addSystemMessage(MessageLevel.Info, "Remote user disconnected, waiting for another companion...");
                 isAuthorized = false;
+            }
 
             Platform.runLater(() -> {
                 status = newStatus;
@@ -186,25 +194,27 @@ public class ChatController extends DataController {
     }
 
     private void addSystemMessage(MessageLevel level, String message) {
-        WebEngine engine = webView.getEngine();
-        Document document = engine.getDocument();
+        Platform.runLater(() -> {
+            WebEngine engine = webView.getEngine();
+            Document document = engine.getDocument();
 
-        Node body = document.getElementsByTagName("BODY").item(0);
-        Element div = document.createElement("div");
-        div.setAttribute("id", messageId.toString());
+            Node body = document.getElementsByTagName("BODY").item(0);
+            Element div = document.createElement("div");
+            div.setAttribute("id", messageId.toString());
 
-        div.setAttribute("style", "color: " + level.toHtmlColor());
+            div.setAttribute("style", "color: " + level.toHtmlColor());
 
-        Text text = document.createTextNode(message);
+            Text text = document.createTextNode(message);
 
-        Element b = document.createElement("b");
-        b.setTextContent("[" + level.toString() + "]" + " System message: ");
+            Element b = document.createElement("b");
+            b.setTextContent("[" + level.toString() + "]" + " System message: ");
 
-        div.appendChild(b);
-        div.appendChild(text);
+            div.appendChild(b);
+            div.appendChild(text);
 
-        body.appendChild(div);
-        scrollChatToId(messageId++);
+            body.appendChild(div);
+            scrollChatToId(messageId++);
+        });
     }
 
     private void send() {

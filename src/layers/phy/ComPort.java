@@ -214,7 +214,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         }
 
         notifySendingAvailableChanged(false);
-        notifyCompanionConnectedChanged(false);
+        //notifyCompanionConnectedChanged(false); //do not notify me, when i press disconnect by myself
         setConnected(false);
     }
 
