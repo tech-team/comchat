@@ -62,6 +62,8 @@ public class ChatController extends DataController {
 
     private Integer messageId = 0;
 
+    private boolean isClosing = false;
+
     private HashMap<Integer, Integer> messageIdToHtmlId = new HashMap<>();
 
     @Override
@@ -88,6 +90,7 @@ public class ChatController extends DataController {
                     .showConfirm();
 
             if (action == Dialog.Actions.YES) {
+                isClosing = true;
                 if (status != Status.NotConnected)
                     protocolStack.getApl().disconnect();
             } else
@@ -111,7 +114,7 @@ public class ChatController extends DataController {
             statusText.setText(status.toString());
             //sendButton.setDisable(!connected);
 
-            if (status == Status.NotConnected) {
+            if (status == Status.NotConnected && !isClosing) {
                 isAuthorized = false;
                 protocolStack.getApl().disconnect();
                 addSystemMessage(MessageLevel.Info, "Disconnected");
