@@ -326,9 +326,9 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
             case SerialPortEvent.DSR:
                 System.out.println("DSR");
-//                if (!serialPort.isDSR()) {
-//                    setConnected(false);
-//                }
+                if (!serialPort.isDSR()) {
+                    setConnected(false);
+                }
                 notifyCompanionConnectedChanged(serialPort.isDSR());
                 break;
 
