@@ -372,7 +372,7 @@ public class ChatController extends DataController {
 
     public void onKeyReleased(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER && !event.isControlDown()) {
-            if (status == Status.Connected)
+            if (status != Status.NotConnected)
                 send();
             else
                 Dialogs.create()
