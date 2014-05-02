@@ -50,8 +50,9 @@ public class ChatController extends DataController {
     private ProtocolStack protocolStack;
     private Status status;
 
-    private String localUser = "undefined";
-    private String remoteUser = "undefined";
+    private String localUser = null;
+    private String remoteUser = null;
+    private boolean isAuthorized = false;
 
     private static final String messageSent = "[×] ";
     private static final String messageReceived = "[«] ";
@@ -85,7 +86,7 @@ public class ChatController extends DataController {
                     .showConfirm();
 
             if (action == Dialog.Actions.YES) {
-                if (status == Status.Connected)
+                if (status != Status.NotConnected)
                     protocolStack.getApl().disconnect();
             } else
                 e.consume();
@@ -108,6 +109,7 @@ public class ChatController extends DataController {
             //sendButton.setDisable(!connected);
 
             if (status == Status.NotConnected) {
+                isAuthorized = false;
                 protocolStack.getApl().disconnect();
                 addSystemMessage(MessageLevel.Info, "Disconnected");
                 Dialogs.create()
@@ -123,15 +125,22 @@ public class ChatController extends DataController {
     private void updateCompanionStatus(boolean connected) {
         Status newStatus = connected ? Status.Chatting : Status.Connected;
 
-        if (status == newStatus)
-            return;
+        if (status != newStatus) {
+            //if we are connected and connection form closed (overwise Auth will be sent after form closing)
+            if (connected && !isAuthorized && localUser != null) {
+                protocolStack.getApl().send(Message.Type.Auth, localUser);
+                isAuthorized = true;
+            }
+            else
+                isAuthorized = false;
 
-        Platform.runLater(() -> {
-            status = newStatus;
-            statusIcon.setFill(status.toColor());
-            statusText.setText(status.toString());
-            sendButton.setDisable(!connected);
-        });
+            Platform.runLater(() -> {
+                status = newStatus;
+                statusIcon.setFill(status.toColor());
+                statusText.setText(status.toString());
+                sendButton.setDisable(!connected);
+            });
+        }
     }
 
     private void updateCTS(boolean CTS) {
@@ -310,8 +319,12 @@ public class ChatController extends DataController {
         //not sure why runLater needed here, cause we are already in UI thread and webEngine already loaded
         Platform.runLater(() -> addSystemMessage(MessageLevel.Info, "Successfully connected"));
 
+        if (!isAuthorized) {
+            isAuthorized = true;
+            protocolStack.getApl().send(Message.Type.Auth, localUser);
+        }
+
         protocolStack.getApl().subscribeOnError(this::onError);
-        protocolStack.getApl().send(Message.Type.Auth, localUser);
     }
 
     private void onError(Exception e) {
