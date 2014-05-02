@@ -327,7 +327,7 @@ public class ChatController extends DataController {
     }
 
     public void onMenuDisconnect(ActionEvent event) {
-        if (status == Status.Connected)
+        if (status != Status.NotConnected)
             protocolStack.getApl().disconnect();
     }
 
