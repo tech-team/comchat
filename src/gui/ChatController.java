@@ -69,6 +69,7 @@ public class ChatController extends DataController {
         statusText.setText(Status.NotConnected.toString());
 
         protocolStack.getPhy().subscribeConnectionStatusChanged(this::updateStatus);
+//        protocolStack.getPhy().subscribeCompanionConnectedChanged(this::updateCompanionStatus);
 
         stage.setOnCloseRequest(e -> {
             Action action = Dialogs.create()
@@ -111,6 +112,19 @@ public class ChatController extends DataController {
                         .message("Disconnected")
                         .showInformation();
             }
+        });
+    }
+
+    private void updateCompanionStatus(boolean connected) {
+        Status newStatus = Status.fromBoolean(connected);
+        if (status == newStatus)
+            return;
+
+        Platform.runLater(() -> {
+            status = newStatus;
+            statusIcon.setFill(status.toColor());
+            statusText.setText(status.toString());
+            sendButton.setDisable(!connected);
         });
     }
 

@@ -41,6 +41,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     private boolean connected = false;
 
     private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
+    private List<Consumer<Boolean>> companionConnectedListeners = new LinkedList<>();
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
 
@@ -184,6 +185,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         serialPort.setRTS(true);
         serialPort.setDTR(true);
         setConnected(true);
+        notifyCompanionConnectedChanged(serialPort.isDSR());
     }
 
     @Override
@@ -209,6 +211,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
             LOGGER.info("Port is not opened");
         }
 
+        notifyCompanionConnectedChanged(false);
         setConnected(false);
     }
 
@@ -264,8 +267,17 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         connectionChangedListeners.add(listener);
     }
 
+    @Override
+    public void subscribeCompanionConnectedChanged(Consumer<Boolean> listener) {
+        companionConnectedListeners.add(listener);
+    }
+
     private void notifyConnectionStatusChanged(boolean status) {
         connectionChangedListeners.forEach(listener -> listener.accept(status));
+    }
+
+    private void notifyCompanionConnectedChanged(boolean status) {
+        companionConnectedListeners.forEach(listener -> listener.accept(status));
     }
 
     private void notifyOnError(Exception e) {
@@ -278,7 +290,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         switch (event.getEventType()) {
             case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
                 System.out.println("OUTPUT_BUFFER_EMPTY");
-//                outputBufferEmpty(event);
                 break;
 
             case SerialPortEvent.DATA_AVAILABLE:
@@ -287,44 +298,37 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
             case SerialPortEvent.BI:
                 System.out.println("BI");
-//                breakInterrupt(event);
                 break;
 
             case SerialPortEvent.CD:
                 System.out.println("CD");
-//                carrierDetect(event);
                 break;
 
             case SerialPortEvent.CTS:
                 System.out.println("CTS");
-//                clearToSend(event);
                 break;
 
             case SerialPortEvent.DSR:
                 System.out.println("DSR");
-                if (!serialPort.isDSR()) {
-                    setConnected(false);
-                }
-//                dataSetReady(event);
+//                if (!serialPort.isDSR()) {
+//                    setConnected(false);
+//                }
+                notifyCompanionConnectedChanged(serialPort.isDSR());
                 break;
 
             case SerialPortEvent.FE:
                 System.out.println("FE");
-//                framingError(event);
                 break;
 
             case SerialPortEvent.OE:
                 System.out.println("OE");
-//                overrunError(event);
                 break;
 
             case SerialPortEvent.PE:
                 System.out.println("PE");
-//                parityError(event);
                 break;
             case SerialPortEvent.RI:
                 System.out.println("RI");
-//                ringIndicator(event);
                 break;
         }
     }

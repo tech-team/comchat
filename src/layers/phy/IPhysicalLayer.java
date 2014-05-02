@@ -13,4 +13,5 @@ public interface IPhysicalLayer extends ILayer {
     boolean readyToSend();
     void send(byte[] data);
     void subscribeConnectionStatusChanged(Consumer<Boolean> listener);
+    void subscribeCompanionConnectedChanged(Consumer<Boolean> listener);
 }

@@ -41,11 +41,6 @@ public class Frame extends PDU {
         this.msg = msg;
     }
 
-    public Frame(byte[] msg) {
-        this.type = Type.I;
-        this.msg = msg;
-    }
-
     public static Frame newACKFrame() {
         Frame frame = new Frame(Type.S, new byte[0]);
         frame.setACK(true);
