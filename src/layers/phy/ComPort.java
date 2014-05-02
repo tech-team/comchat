@@ -213,7 +213,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
             LOGGER.info("Port is not opened");
         }
 
-        notifySendingAvailableChanged(serialPort.isCTS());
+        notifySendingAvailableChanged(false);
         notifyCompanionConnectedChanged(false);
         setConnected(false);
     }
