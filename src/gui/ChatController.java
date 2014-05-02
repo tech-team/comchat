@@ -11,6 +11,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -39,6 +40,9 @@ public class ChatController extends DataController {
     public VBox layout;
     public Circle statusIcon;
     public Label statusText;
+
+    public Circle ctsIcon;
+    public Label ctsText;
 
     public static final String PROGRAM_NAME = "ComChat";
     public static final String PROGRAM_VERSION = "v0.1 alpha";
@@ -69,7 +73,8 @@ public class ChatController extends DataController {
         statusText.setText(Status.NotConnected.toString());
 
         protocolStack.getPhy().subscribeConnectionStatusChanged(this::updateStatus);
-//        protocolStack.getPhy().subscribeCompanionConnectedChanged(this::updateCompanionStatus);
+        protocolStack.getPhy().subscribeCompanionConnectedChanged(this::updateCompanionStatus);
+        protocolStack.getPhy().subscribeSendingAvailableChanged(this::updateCTS);
 
         stage.setOnCloseRequest(e -> {
             Action action = Dialogs.create()
@@ -100,7 +105,7 @@ public class ChatController extends DataController {
             status = newStatus;
             statusIcon.setFill(status.toColor());
             statusText.setText(status.toString());
-            sendButton.setDisable(!connected);
+            //sendButton.setDisable(!connected);
 
             if (status == Status.NotConnected) {
                 protocolStack.getApl().disconnect();
@@ -116,7 +121,8 @@ public class ChatController extends DataController {
     }
 
     private void updateCompanionStatus(boolean connected) {
-        Status newStatus = Status.fromBoolean(connected);
+        Status newStatus = connected ? Status.Chatting : Status.Connected;
+
         if (status == newStatus)
             return;
 
@@ -125,6 +131,15 @@ public class ChatController extends DataController {
             statusIcon.setFill(status.toColor());
             statusText.setText(status.toString());
             sendButton.setDisable(!connected);
+        });
+    }
+
+    private void updateCTS(boolean CTS) {
+        Platform.runLater(() -> {
+            if (CTS)
+                ctsIcon.setFill(Color.YELLOWGREEN);
+            else
+                ctsIcon.setFill(Color.RED);
         });
     }
 

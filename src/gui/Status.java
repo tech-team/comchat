@@ -4,7 +4,9 @@ import javafx.scene.paint.Color;
 
 public enum Status {
     NotConnected("Not connected", Color.RED),
-    Connected("Connected", Color.YELLOWGREEN),
+    Connected("Connected. Waiting for companion", Color.YELLOW),
+    Chatting("Chatting", Color.YELLOWGREEN),
+
     Error("Error", Color.RED);
 
     private final String value;

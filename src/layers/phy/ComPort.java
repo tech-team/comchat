@@ -279,7 +279,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
-    public void subscribenotifySendingAvailbaleChanged(Consumer<Boolean> listener) {
+    public void subscribeSendingAvailableChanged(Consumer<Boolean> listener) {
         sendingAvailbaleChangedListeners.add(listener);
     }
 
@@ -291,7 +291,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         companionConnectedListeners.forEach(listener -> listener.accept(status));
     }
 
-    private void notifySendingAvailbaleChanged(boolean status) {
+    private void notifySendingAvailableChanged(boolean status) {
         sendingAvailbaleChangedListeners.forEach(listener -> listener.accept(status));
     }
 
@@ -321,6 +321,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
             case SerialPortEvent.CTS:
                 System.out.println("CTS = [" + serialPort.isCTS() + "]");
+                notifySendingAvailableChanged(serialPort.isCTS());
                 break;
 
             case SerialPortEvent.DSR:
