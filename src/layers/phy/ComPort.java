@@ -221,11 +221,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 //        System.out.println("ready? - " + readyToSend());
         serialPort.setRTS(false);
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
             outStream.write(data);
         } catch (IOException e) {
             LOGGER.warning("Exception occurred: " + e.getMessage());
@@ -326,9 +321,9 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
             case SerialPortEvent.DSR:
                 System.out.println("DSR");
-                if (!serialPort.isDSR()) {
-                    setConnected(false);
-                }
+//                if (!serialPort.isDSR()) {
+//                    setConnected(false);
+//                }
                 notifyCompanionConnectedChanged(serialPort.isDSR());
                 break;
 
