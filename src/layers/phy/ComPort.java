@@ -42,6 +42,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
     private List<Consumer<Boolean>> companionConnectedListeners = new LinkedList<>();
+    private List<Consumer<Boolean>> sendingAvailbaleChangedListeners = new LinkedList<>();
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
 
@@ -217,8 +218,13 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     @Override
     public synchronized void send(byte[] data) {
-        System.out.println("ready? - " + readyToSend());
+//        System.out.println("ready? - " + readyToSend());
         serialPort.setRTS(false);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try {
             outStream.write(data);
         } catch (IOException e) {
@@ -272,12 +278,21 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         companionConnectedListeners.add(listener);
     }
 
+    @Override
+    public void subscribenotifySendingAvailbaleChanged(Consumer<Boolean> listener) {
+        sendingAvailbaleChangedListeners.add(listener);
+    }
+
     private void notifyConnectionStatusChanged(boolean status) {
         connectionChangedListeners.forEach(listener -> listener.accept(status));
     }
 
     private void notifyCompanionConnectedChanged(boolean status) {
         companionConnectedListeners.forEach(listener -> listener.accept(status));
+    }
+
+    private void notifySendingAvailbaleChanged(boolean status) {
+        sendingAvailbaleChangedListeners.forEach(listener -> listener.accept(status));
     }
 
     private void notifyOnError(Exception e) {
@@ -305,7 +320,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
                 break;
 
             case SerialPortEvent.CTS:
-                System.out.println("CTS");
+                System.out.println("CTS = [" + serialPort.isCTS() + "]");
                 break;
 
             case SerialPortEvent.DSR:
