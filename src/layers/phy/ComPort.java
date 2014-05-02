@@ -187,6 +187,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         serialPort.setDTR(true);
         setConnected(true);
         notifyCompanionConnectedChanged(serialPort.isDSR());
+        notifySendingAvailableChanged(serialPort.isCTS());
     }
 
     @Override
@@ -212,6 +213,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
             LOGGER.info("Port is not opened");
         }
 
+        notifySendingAvailableChanged(serialPort.isCTS());
         notifyCompanionConnectedChanged(false);
         setConnected(false);
     }
