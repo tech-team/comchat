@@ -32,7 +32,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     private AtomicBoolean forceSending = new AtomicBoolean(false);
 
 
-    private Thread sendingThread = new Thread(this::sendingThreadJob);
+    private Thread sendingThread;
     private boolean sendingActive = false;
     private static final int SENDING_DELAY = 100;
     private static final int SENDING_TIMEOUT = 3000;
@@ -102,7 +102,8 @@ public class DataLinkLayer implements IDataLinkLayer {
             if (accessingCycles <= 0 && remoteUserConnected) {
                 System.out.println("onError");
                 notifyOnError(new LayerUnavailableException("Physical layer was unavailable for " + ACCESSING_PHY_TIMEOUT + "ms"));
-//            sendingActive = false; // TODO: not sure
+                systemFramesToSend.clear();
+                framesToSend.clear();
             }
 
             try {
@@ -117,6 +118,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     @Override
     public void connect(PhysicalLayerSettings settings) throws ConnectionException {
         getLowerLayer().connect(settings);
+        sendingThread = new Thread(this::sendingThreadJob);
         sendingActive = true;
         sendingThread.start();
     }
@@ -221,6 +223,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     @Override
     public void setLowerLayer(ILayer layer) {
         phy = (IPhysicalLayer) layer;
+        phy.subscribeCompanionConnectedChanged(status -> remoteUserConnected = status);
     }
 
     @Override

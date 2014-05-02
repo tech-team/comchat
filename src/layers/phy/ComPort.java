@@ -187,7 +187,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         serialPort.setDTR(true);
         setConnected(true);
         notifyCompanionConnectedChanged(serialPort.isDSR());
-        notifySendingAvailableChanged(serialPort.isCTS());
     }
 
     @Override
@@ -221,7 +220,13 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     @Override
     public synchronized void send(byte[] data) {
 //        System.out.println("ready? - " + readyToSend());
+
         serialPort.setRTS(false);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try {
             outStream.write(data);
         } catch (IOException e) {
