@@ -7,10 +7,10 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class Message extends PDU {
+public class Message implements PDU {
 
     public enum Type {
-        Auth, Msg, Ack, Term, TermAck;
+        Auth, Msg, Ack;
 
         public static Type fromInteger(int x) throws Exception {
             int max = Type.values().length;
@@ -43,7 +43,7 @@ public class Message extends PDU {
         return msg;
     }
 
-
+    @Override
     public byte[] serialize() {
         byte typeByte = (byte) type.ordinal();
         byte[] idBytes = ByteBuffer.allocate(4).putInt(this.id).array();

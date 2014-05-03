@@ -39,7 +39,6 @@ public class ChatController extends DataController {
     @FXML private Circle statusIcon;
     @FXML private Label statusText;
     @FXML private Circle ctsIcon;
-    @FXML private Label ctsText;
 
     public static final String PROGRAM_NAME = "ComChat";
     public static final String PROGRAM_VERSION = "v0.1 alpha";

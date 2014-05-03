@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.web.*?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.web.WebView?>
 
 <VBox fx:id="layout" layoutX="0.0" layoutY="0.0" prefHeight="344.0" prefWidth="483.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ChatController">
   <children>
@@ -27,7 +23,7 @@
         </Menu>
       </menus>
     </MenuBar>
-    <SplitPane dividerPositions="0.5" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.5036764705882353" focusTraversable="true" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" VBox.vgrow="ALWAYS">
       <items>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
           <children>
@@ -43,16 +39,28 @@
     </SplitPane>
     <HBox prefHeight="40.0" prefWidth="318.0">
       <children>
-        <ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+        <ToolBar maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="351.0" HBox.hgrow="ALWAYS">
           <items>
             <Circle fx:id="statusIcon" fill="RED" radius="6.00006103515625" stroke="BLACK" strokeType="INSIDE" />
-            <Label fx:id="statusText" text="Not connected" textFill="#636363" />
+            <Label fx:id="statusText" alignment="CENTER_LEFT" text="Not connected" textAlignment="LEFT">
+              <textFill>
+                <Color blue="0.388" green="0.388" red="0.388" />
+              </textFill>
+            </Label>
           </items>
         </ToolBar>
+          <ToolBar maxHeight="1.7976931348623157E308">
+              <Circle fx:id="ctsIcon" fill="RED" radius="6.00006103515625" stroke="BLACK" strokeType="INSIDE" />
+              <Label fx:id="ctsText" alignment="CENTER_LEFT" text="CTS" textAlignment="LEFT">
+                  <textFill>
+                      <Color blue="0.388" green="0.388" red="0.388" />
+                  </textFill>
+              </Label>
+          </ToolBar>
         <ToolBar maxHeight="1.7976931348623157E308">
           <items>
-            <Button fx:id="sendButton" defaultButton="true" disable="true" mnemonicParsing="false" onAction="#sendClick" text="Send" />
-          </items>
+              <Button fx:id="sendButton" defaultButton="true" disable="true" mnemonicParsing="false" onAction="#sendClick" text="Send" />
+            </items>
         </ToolBar>
       </children>
     </HBox>

@@ -4,10 +4,8 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.ProtocolStack;
 import layers.exceptions.ConnectionException;
@@ -19,14 +17,12 @@ import layers.phy.settings.comport_settings.StopBitsEnum;
 import org.controlsfx.dialog.Dialogs;
 
 public class ConnectionController extends DataController {
-    @FXML private GridPane layout;
     @FXML private TextField userName;
     @FXML private ComboBox<String> comPort;
     @FXML private ComboBox<Integer> baudRate;
     @FXML private ComboBox<String> dataBits;
     @FXML private ComboBox<String> stopBits;
     @FXML private ComboBox<String> parityCheck;
-    @FXML private Button refresh;
 
     private ProtocolStack protocolStack;
 

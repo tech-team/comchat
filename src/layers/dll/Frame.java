@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.BitSet;
 
-public class Frame extends PDU {
+public class Frame implements PDU {
     public enum Type {
         I, S;
 
@@ -135,7 +135,7 @@ public class Frame extends PDU {
         this.correct = correct;
     }
 
-
+    @Override
     public byte[] serialize() {
         byte typeByte = (byte) type.ordinal();
 

@@ -1,6 +1,7 @@
 package layers.dll;
 
 import layers.ILayer;
+import layers.PDU;
 import layers.apl.IApplicationLayer;
 import layers.exceptions.ConnectionException;
 import layers.exceptions.LayerUnavailableException;
