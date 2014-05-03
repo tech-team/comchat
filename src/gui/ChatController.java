@@ -230,21 +230,10 @@ public class ChatController extends DataController {
                     remoteUser = message.getMsg();
                     addSystemMessage(MessageLevel.Info, "Remote user connected: " + message.getMsg());
                     protocolStack.getApl().handshakeFinished();
-                    //TODO: enable "sendability"
                     break;
                 case Ack:
                     int id = Integer.parseInt(message.getMsg());
                     markMessage(id);
-                    break;
-                case Term: //TODO: DEPRECATED
-                    addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
-//                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
-                    break;
-                case TermAck: //TODO: DEPRECATED
-                    //TODO: interface though all the layers?
-                    addSystemMessage(MessageLevel.Info, "Termination confirmed");
-                    protocolStack.getApl().disconnect();
-                    addSystemMessage(MessageLevel.Info, "Disconnected");
                     break;
                 default:
                     throw new NotImplementedException();

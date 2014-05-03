@@ -1,7 +1,6 @@
 package layers.dll;
 
 import layers.ILayer;
-import layers.PDU;
 import layers.apl.IApplicationLayer;
 import layers.exceptions.ConnectionException;
 import layers.exceptions.LayerUnavailableException;
@@ -131,6 +130,11 @@ public class DataLinkLayer implements IDataLinkLayer {
         systemFramesToSend.clear();
         wasACK.set(true);
         getLowerLayer().disconnect();
+    }
+
+    @Override
+    public boolean isConnected() {
+        return getLowerLayer().isConnected();
     }
 
     @Override

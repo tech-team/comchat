@@ -56,6 +56,11 @@ public class ApplicationLayer implements IApplicationLayer {
     }
 
     @Override
+    public boolean isConnected() {
+        return getLowerLayer().isConnected();
+    }
+
+    @Override
     public int send(Message.Type type, String msg) {
         System.out.println("Sent: " + msg);
 
