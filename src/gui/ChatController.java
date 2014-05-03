@@ -21,7 +21,6 @@ import javafx.stage.StageStyle;
 import layers.ProtocolStack;
 import layers.apl.Message;
 import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,19 +81,9 @@ public class ChatController extends DataController {
         protocolStack.getPhy().subscribeSendingAvailableChanged(this::updateCTS);
 
         stage.setOnCloseRequest(e -> {
-            Action action = Dialogs.create()
-                    .owner(stage)
-                    .title(PROGRAM_NAME)
-                    .masthead("Confirmation")
-                    .message("Do you really want to exit?")
-                    .showConfirm();
-
-            if (action == Dialog.Actions.YES) {
-                isClosing = true;
-                if (status != Status.NotConnected)
-                    protocolStack.getApl().disconnect();
-            } else
-                e.consume();
+            isClosing = true;
+            if (status != Status.NotConnected)
+                protocolStack.getApl().disconnect();
         });
 
         protocolStack.getApl().subscribeToReceive(this::receive);
