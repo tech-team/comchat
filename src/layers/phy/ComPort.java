@@ -42,7 +42,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
     private List<Consumer<Boolean>> companionConnectedListeners = new LinkedList<>();
-    private List<Consumer<Boolean>> sendingAvailbaleChangedListeners = new LinkedList<>();
+    private List<Consumer<Boolean>> sendingAvailableChangedListeners = new LinkedList<>();
     private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
 
 
@@ -223,7 +223,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
         serialPort.setRTS(false);
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -282,7 +282,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
     @Override
     public void subscribeSendingAvailableChanged(Consumer<Boolean> listener) {
-        sendingAvailbaleChangedListeners.add(listener);
+        sendingAvailableChangedListeners.add(listener);
     }
 
     private void notifyConnectionStatusChanged(boolean status) {
@@ -294,7 +294,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     private void notifySendingAvailableChanged(boolean status) {
-        sendingAvailbaleChangedListeners.forEach(listener -> listener.accept(status));
+        sendingAvailableChangedListeners.forEach(listener -> listener.accept(status));
     }
 
     private void notifyOnError(Exception e) {

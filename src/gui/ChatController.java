@@ -2,6 +2,7 @@ package gui;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,7 +21,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import layers.ProtocolStack;
 import layers.apl.Message;
-import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialogs;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,16 +32,14 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class ChatController extends DataController {
-    public Button sendButton;
-    public WebView webView;
-    public TextArea inputField;
-    public DataStage connectionStage;
-    public VBox layout;
-    public Circle statusIcon;
-    public Label statusText;
-
-    public Circle ctsIcon;
-    public Label ctsText;
+    @FXML private Button sendButton;
+    @FXML private WebView webView;
+    @FXML private TextArea inputField;
+    @FXML private VBox layout;
+    @FXML private Circle statusIcon;
+    @FXML private Label statusText;
+    @FXML private Circle ctsIcon;
+    @FXML private Label ctsText;
 
     public static final String PROGRAM_NAME = "ComChat";
     public static final String PROGRAM_VERSION = "v0.1 alpha";
@@ -283,7 +281,7 @@ public class ChatController extends DataController {
 
             Parent root = loader.load();
 
-            connectionStage = new DataStage(loader.getController(), protocolStack);
+            DataStage connectionStage = new DataStage(loader.getController(), protocolStack);
 
             connectionStage.setTitle("Connection");
             final double rem = javafx.scene.text.Font.getDefault().getSize() / 13;
