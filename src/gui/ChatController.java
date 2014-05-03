@@ -299,7 +299,6 @@ public class ChatController extends DataController {
             connectionStage.setTitle("Connection");
             final double rem = javafx.scene.text.Font.getDefault().getSize() / 13;
             Scene conScene = new Scene(root, 400.0*rem, 205.0*rem);
-            conScene.getStylesheets().add("/gui/css/connection.css");
             connectionStage.setScene(conScene);
             connectionStage.setResizable(false);
             connectionStage.initModality(Modality.WINDOW_MODAL);
