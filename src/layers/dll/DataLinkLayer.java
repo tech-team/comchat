@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 public class DataLinkLayer implements IDataLinkLayer {
     private IApplicationLayer apl;
@@ -37,9 +36,6 @@ public class DataLinkLayer implements IDataLinkLayer {
     private static final int SENDING_DELAY = 100;
     private static final int SENDING_TIMEOUT = 3000;
     private static final int ACCESSING_PHY_TIMEOUT = 5000;
-
-    private List<Consumer<Exception>> onErrorListeners = new LinkedList<>();
-
 
 
     private int getSendingCycles() {
@@ -234,10 +230,5 @@ public class DataLinkLayer implements IDataLinkLayer {
     @Override
     public synchronized void notifyOnError(Exception e) {
         getUpperLayer().notifyOnError(e);
-    }
-
-    private void sendLastToPhy() {
-        phy.send(framesToSend.peek());
-        wasACK.set(false);
     }
 }
