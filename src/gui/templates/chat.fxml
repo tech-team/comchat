@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.web.*?>
+<?import javafx.scene.paint.Color?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.web.WebView?>
 
 <VBox fx:id="layout" layoutX="0.0" layoutY="0.0" prefHeight="344.0" prefWidth="483.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="gui.ChatController">
   <children>
@@ -49,14 +44,18 @@
             <Circle fx:id="statusIcon" fill="RED" radius="6.00006103515625" stroke="BLACK" strokeType="INSIDE" />
             <Label fx:id="statusText" alignment="CENTER_LEFT" text="Not connected" textAlignment="LEFT">
               <textFill>
-                <Color blue="0.388" green="0.388" red="0.388" fx:id="x1" />
+                <Color blue="0.388" green="0.388" red="0.388" />
               </textFill>
             </Label>
           </items>
         </ToolBar>
           <ToolBar maxHeight="1.7976931348623157E308">
               <Circle fx:id="ctsIcon" fill="RED" radius="6.00006103515625" stroke="BLACK" strokeType="INSIDE" />
-              <Label fx:id="ctsText" alignment="CENTER_LEFT" text="CTS" textAlignment="LEFT" textFill="$x1" />
+              <Label fx:id="ctsText" alignment="CENTER_LEFT" text="CTS" textAlignment="LEFT">
+                  <textFill>
+                      <Color blue="0.388" green="0.388" red="0.388" />
+                  </textFill>
+              </Label>
           </ToolBar>
         <ToolBar maxHeight="1.7976931348623157E308">
           <items>

@@ -133,6 +133,11 @@ public class DataLinkLayer implements IDataLinkLayer {
     }
 
     @Override
+    public boolean isConnected() {
+        return getLowerLayer().isConnected();
+    }
+
+    @Override
     public void send(byte[] data) {
         int chunks = (int) Math.ceil((double) data.length / (double) Frame.MAX_MSG_SIZE);
         for (int i = 0; i < chunks; ++i) {
@@ -227,12 +232,8 @@ public class DataLinkLayer implements IDataLinkLayer {
     }
 
     @Override
-    public void subscribeOnError(Consumer<Exception> listener) {
-        onErrorListeners.add(listener);
-    }
-
-    private synchronized void notifyOnError(Exception e) {
-        onErrorListeners.forEach(listener -> listener.accept(e));
+    public synchronized void notifyOnError(Exception e) {
+        getUpperLayer().notifyOnError(e);
     }
 
     private void sendLastToPhy() {

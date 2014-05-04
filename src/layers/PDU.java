@@ -1,5 +1,8 @@
 package layers;
 
-public abstract class PDU  {
-
+public interface PDU  {
+    byte[] serialize();
+    static PDU deserialize(byte[] data) {
+        return null;
+    }
 }

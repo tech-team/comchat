@@ -11,9 +11,9 @@ public enum DataBitsEnum {
     private String name;
     private int value;
 
-    private DataBitsEnum(String name, int stop_bits) {
+    private DataBitsEnum(String name, int data_bits) {
         this.name = name;
-        this.value = stop_bits;
+        this.value = data_bits;
     }
 
     @Override

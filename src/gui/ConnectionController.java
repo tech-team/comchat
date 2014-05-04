@@ -3,10 +3,9 @@ package gui;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
+import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import layers.ProtocolStack;
 import layers.exceptions.ConnectionException;
@@ -18,14 +17,12 @@ import layers.phy.settings.comport_settings.StopBitsEnum;
 import org.controlsfx.dialog.Dialogs;
 
 public class ConnectionController extends DataController {
-    public GridPane layout;
-    public TextField userName;
-    public ComboBox<String> comPort;
-    public ComboBox<Integer> baudRate;
-    public ComboBox<String> dataBits;
-    public ComboBox<String> stopBits;
-    public ComboBox<String> parityCheck;
-    public Button refresh;
+    @FXML private TextField userName;
+    @FXML private ComboBox<String> comPort;
+    @FXML private ComboBox<Integer> baudRate;
+    @FXML private ComboBox<String> dataBits;
+    @FXML private ComboBox<String> stopBits;
+    @FXML private ComboBox<String> parityCheck;
 
     private ProtocolStack protocolStack;
 
@@ -89,14 +86,12 @@ public class ConnectionController extends DataController {
             String message = "Unable to connect with these settings";
             Exception withMessage = new Exception(message, e);
 
-            Platform.runLater(() -> {
-                Dialogs.create()
-                        .owner(stage)
-                        .title("ComChat")
-                        .masthead("Error")
-                        .message(message) //well, that has no effect for exception dialog unfortunately
-                        .showException(withMessage);
-            });
+            Platform.runLater(() -> Dialogs.create()
+                    .owner(stage)
+                    .title("ComChat")
+                    .masthead("Error")
+                    .message(message) //well, that has no effect for exception dialog unfortunately
+                    .showException(withMessage));
         }
     }
 

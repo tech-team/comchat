@@ -2,6 +2,7 @@ package gui;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,8 +21,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import layers.ProtocolStack;
 import layers.apl.Message;
-import org.controlsfx.control.action.Action;
-import org.controlsfx.dialog.Dialog;
 import org.controlsfx.dialog.Dialogs;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,16 +32,13 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class ChatController extends DataController {
-    public Button sendButton;
-    public WebView webView;
-    public TextArea inputField;
-    public DataStage connectionStage;
-    public VBox layout;
-    public Circle statusIcon;
-    public Label statusText;
-
-    public Circle ctsIcon;
-    public Label ctsText;
+    @FXML private Button sendButton;
+    @FXML private WebView webView;
+    @FXML private TextArea inputField;
+    @FXML private VBox layout;
+    @FXML private Circle statusIcon;
+    @FXML private Label statusText;
+    @FXML private Circle ctsIcon;
 
     public static final String PROGRAM_NAME = "ComChat";
     public static final String PROGRAM_VERSION = "v0.1 alpha";
@@ -82,19 +78,9 @@ public class ChatController extends DataController {
         protocolStack.getPhy().subscribeSendingAvailableChanged(this::updateCTS);
 
         stage.setOnCloseRequest(e -> {
-            Action action = Dialogs.create()
-                    .owner(stage)
-                    .title(PROGRAM_NAME)
-                    .masthead("Confirmation")
-                    .message("Do you really want to exit?")
-                    .showConfirm();
-
-            if (action == Dialog.Actions.YES) {
-                isClosing = true;
-                if (status != Status.NotConnected)
-                    protocolStack.getApl().disconnect();
-            } else
-                e.consume();
+            isClosing = true;
+            if (status != Status.NotConnected)
+                protocolStack.getApl().disconnect();
         });
 
         protocolStack.getApl().subscribeToReceive(this::receive);
@@ -244,21 +230,10 @@ public class ChatController extends DataController {
                     remoteUser = message.getMsg();
                     addSystemMessage(MessageLevel.Info, "Remote user connected: " + message.getMsg());
                     protocolStack.getApl().handshakeFinished();
-                    //TODO: enable "sendability"
                     break;
                 case Ack:
                     int id = Integer.parseInt(message.getMsg());
                     markMessage(id);
-                    break;
-                case Term: //TODO: DEPRECATED
-                    addSystemMessage(MessageLevel.Info, "Termination requested from remote user");
-//                    protocolStack.getApl().send(Message.Type.TermAck, ""); // TODO: not sure if we do not need to send any data
-                    break;
-                case TermAck: //TODO: DEPRECATED
-                    //TODO: interface though all the layers?
-                    addSystemMessage(MessageLevel.Info, "Termination confirmed");
-                    protocolStack.getApl().disconnect();
-                    addSystemMessage(MessageLevel.Info, "Disconnected");
                     break;
                 default:
                     throw new NotImplementedException();
@@ -294,12 +269,11 @@ public class ChatController extends DataController {
 
             Parent root = loader.load();
 
-            connectionStage = new DataStage(loader.getController(), protocolStack);
+            DataStage connectionStage = new DataStage(loader.getController(), protocolStack);
 
             connectionStage.setTitle("Connection");
             final double rem = javafx.scene.text.Font.getDefault().getSize() / 13;
             Scene conScene = new Scene(root, 400.0*rem, 205.0*rem);
-            conScene.getStylesheets().add("/gui/css/connection.css");
             connectionStage.setScene(conScene);
             connectionStage.setResizable(false);
             connectionStage.initModality(Modality.WINDOW_MODAL);
