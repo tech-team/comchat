@@ -3,8 +3,6 @@ package layers;
 import layers.exceptions.ConnectionException;
 import layers.phy.settings.PhysicalLayerSettings;
 
-import java.util.function.Consumer;
-
 public interface ILayer {
     ILayer getUpperLayer();
     ILayer getLowerLayer();
@@ -15,5 +13,5 @@ public interface ILayer {
     void disconnect();
     boolean isConnected();
 
-    void subscribeOnError(Consumer<Exception> listener);
+    void notifyOnError(Exception e);
 }

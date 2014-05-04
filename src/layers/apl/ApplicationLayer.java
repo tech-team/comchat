@@ -40,7 +40,8 @@ public class ApplicationLayer implements IApplicationLayer {
         onErrorListeners.add(listener);
     }
 
-    private void notifyOnError(Exception e) {
+    @Override
+    public void notifyOnError(Exception e) {
         onErrorListeners.forEach(listener -> listener.accept(e));
     }
 

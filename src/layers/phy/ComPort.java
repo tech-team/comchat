@@ -266,11 +266,6 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
-    public void subscribeOnError(Consumer<Exception> listener) {
-        onErrorListeners.add(listener);
-    }
-
-    @Override
     public void subscribeConnectionStatusChanged(Consumer<Boolean> listener) {
         connectionChangedListeners.add(listener);
     }
@@ -297,7 +292,7 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
         sendingAvailableChangedListeners.forEach(listener -> listener.accept(status));
     }
 
-    private void notifyOnError(Exception e) {
+    public void notifyOnError(Exception e) {
         onErrorListeners.forEach(listener -> listener.accept(e));
     }
 
