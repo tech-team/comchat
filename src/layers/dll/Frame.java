@@ -3,11 +3,14 @@ package layers.dll;
 import layers.PDU;
 import util.ArrayUtils;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.BitSet;
 
 public class Frame implements PDU {
+    public static byte[] encode(byte endByte) {
+        return new byte[0];
+    }
+
     public enum Type {
         I, S;
 
@@ -29,6 +32,10 @@ public class Frame implements PDU {
     private boolean CHUNKS = false;
     private boolean END_CHUNKS = false;
 
+
+
+    public static final byte START_BYTE = (byte) 0xFF;
+    public static final byte STOP_BYTE = (byte) 0xFF;
 
 
     private Type type;
@@ -153,10 +160,12 @@ public class Frame implements PDU {
         infoBytes[1] = supervisorInfoByte;
 
         byte[] frame = ArrayUtils.concatenate(infoBytes, msg);
-        byte[] size = ByteBuffer.allocate(2).putShort((short) frame.length).array();
+//        byte[] size = ByteBuffer.allocate(2).putShort((short) frame.length).array();
 
 //        byte[] encodedFrame = cyclicEncode(frame);
-        return ArrayUtils.concatenate(size, frame);
+
+        byte[] withStart = ArrayUtils.concatenate(START_BYTE, frame);
+        return ArrayUtils.concatenate(withStart, STOP_BYTE);
     }
 
     public static Frame deserialize(byte[] data) {

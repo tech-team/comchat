@@ -7,5 +7,8 @@ public enum ComSettings implements PhySettings {
     BAUD_RATE,
     DATA_BITS,
     STOP_BITS,
-    PARITY
+    PARITY,
+    END_BYTE,
+    ESC_BYTE,
+    ESC_ESC_BYTE
 }
