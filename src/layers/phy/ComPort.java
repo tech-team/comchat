@@ -16,11 +16,7 @@ import layers.phy.settings.comport_settings.StopBitsEnum;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TooManyListenersException;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -43,6 +39,9 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     private List<Consumer<Boolean>> connectionChangedListeners = new LinkedList<>();
     private List<Consumer<Boolean>> companionConnectedListeners = new LinkedList<>();
     private List<Consumer<Boolean>> sendingAvailableChangedListeners = new LinkedList<>();
+
+    private byte START_BYTE;
+    private byte STOP_BYTE;
 
     @Override
     public boolean isConnected() {
@@ -240,6 +239,12 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     @Override
+    public void initMarkBytes(byte START_BYTE, byte END_BYTE) {
+        this.START_BYTE = START_BYTE;
+        this.STOP_BYTE = END_BYTE;
+    }
+
+    @Override
     public IDataLinkLayer getUpperLayer() {
         return dataLinkLayer;
     }
@@ -341,27 +346,52 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
     }
 
     public void dataAvailable(SerialPortEvent event) {
-        // reading size of the data
         try {
-            byte[] dataSize = new byte[2];
-            for (int i = 0; i < dataSize.length; ++i) {
-                dataSize[i] = (byte) inStream.read();
+            List<Byte> bytes = new ArrayList<>();
+            byte start = (byte) inStream.read();
+            if (start == START_BYTE) {
+                while (true) {
+                    byte b = (byte) inStream.read();
+                    if (b == STOP_BYTE) break;
+
+                    bytes.add(b);
+                }
+            }
+            else {
+                throw new Exception("Data was corrupted");
             }
 
-            // reading the whole data
-            int size = (int) ByteBuffer.wrap(dataSize).getShort();
-            byte[] data = new byte[size];
-            for (int i = 0; i < size; ++i) {
-                data[i] = (byte) inStream.read();
+            byte[] out = new byte[bytes.size()];
+            for (int i = 0; i < out.length; ++i) {
+                out[i] = bytes.get(i);
             }
 
-            getUpperLayer().receive(data);
+            getUpperLayer().receive(out);
+
+
+            // reading size of the data
+//            byte[] dataSize = new byte[2];
+//            for (int i = 0; i < dataSize.length; ++i) {
+//                dataSize[i] = (byte) inStream.read();
+//            }
+
+//            // reading the whole data
+//            int size = (int) ByteBuffer.wrap(dataSize).getShort();
+//            byte[] data = new byte[size];
+//            for (int i = 0; i < size; ++i) {
+//                data[i] = (byte) inStream.read();
+//            }
+//
+//            getUpperLayer().receive(data);
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            notifyOnError(e);
         }
+
+
+
     }
-
-
 
 
 

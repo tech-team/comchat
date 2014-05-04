@@ -113,6 +113,7 @@ public class DataLinkLayer implements IDataLinkLayer {
 
     @Override
     public void connect(PhysicalLayerSettings settings) throws ConnectionException {
+        getLowerLayer().initMarkBytes(Frame.START_BYTE, Frame.STOP_BYTE);
         getLowerLayer().connect(settings);
         sendingThread = new Thread(this::sendingThreadJob);
         sendingActive = true;
