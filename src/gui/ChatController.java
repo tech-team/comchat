@@ -42,6 +42,7 @@ public class ChatController extends DataController {
 
     public static final String PROGRAM_NAME = "ComChat";
     public static final String PROGRAM_VERSION = "v0.1 alpha";
+    public static final boolean DEBUG = false;
 
     private ProtocolStack protocolStack;
     private Status status;
@@ -154,6 +155,8 @@ public class ChatController extends DataController {
     }
 
     private void addUserMessage(String author, String message, Integer id) {
+        System.out.println(author + ": " + message);
+
         WebEngine engine = webView.getEngine();
         Document document = engine.getDocument();
         Node body = document.getElementsByTagName("BODY").item(0);
@@ -183,6 +186,10 @@ public class ChatController extends DataController {
     }
 
     private void addSystemMessage(MessageLevel level, String message) {
+        System.out.println(level.toString() + ": " + message);
+        if (level == MessageLevel.Debug && !DEBUG)
+            return;
+
         Platform.runLater(() -> {
             WebEngine engine = webView.getEngine();
             Document document = engine.getDocument();

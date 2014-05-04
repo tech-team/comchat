@@ -20,8 +20,6 @@ public class CycleCoder {
             byte halfByte1 = (byte)(b & (byte) 0b00001111);
             result[2 * i] = map[halfByte1];
 
-            //Java being so java :(
-            //http://stackoverflow.com/questions/3948220/behaviour-of-unsigned-right-shift-applied-to-byte-variable
             byte halfByte2 = (byte)((b & 0xFF) >> (byte) 4);
             result[2 * i + 1] = map[halfByte2];
         }
