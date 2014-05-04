@@ -157,7 +157,7 @@ public class DataLinkLayer implements IDataLinkLayer {
         Frame frame = Frame.deserialize(data);
 //        System.out.println("isCorrect: " + frame.isCorrect());
 
-        if (frame.getType() != Frame.Type.I && !frame.isCorrect())
+        if (frame == null || frame.getType() != Frame.Type.I && !frame.isCorrect())
             return; // throw away this frame
 
         switch (frame.getType()) {

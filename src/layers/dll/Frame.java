@@ -1,6 +1,7 @@
 package layers.dll;
 
 import layers.PDU;
+import layers.exceptions.DecodeException;
 import util.ArrayUtils;
 
 import java.util.Arrays;
@@ -42,6 +43,7 @@ public class Frame implements PDU {
     private byte[] msg;
 
     private boolean correct;
+    private static CycleCoder cc = new CycleCoder();
 
     private Frame(Type type, byte[] msg) {
         this.type = type;
@@ -162,15 +164,20 @@ public class Frame implements PDU {
         byte[] frame = ArrayUtils.concatenate(infoBytes, msg);
 //        byte[] size = ByteBuffer.allocate(2).putShort((short) frame.length).array();
 
-//        byte[] encodedFrame = cyclicEncode(frame);
+        byte[] encodedFrame = cc.encode(frame);
 
-        byte[] withStart = ArrayUtils.concatenate(START_BYTE, frame);
+        byte[] withStart = ArrayUtils.concatenate(START_BYTE, encodedFrame);
         return ArrayUtils.concatenate(withStart, STOP_BYTE);
     }
 
     public static Frame deserialize(byte[] data) {
-//        boolean correct = isCorrect(data);
-//        data = cyclicDecode(data);
+        boolean correct = true;
+        try {
+            data = cc.decode(data);
+        } catch (DecodeException e) {
+            correct = false;
+            return null;
+        }
 
         byte typeByte = data[0];
         Type type = null;
