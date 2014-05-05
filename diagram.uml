@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>gui</OriginalElement>
+  <nodes>
+    <node x="-125.0" y="366.0">gui.ChatController</node>
+    <node x="447.0" y="238.0">layers.phy.settings.comport_settings.DataBitsEnum</node>
+    <node x="-238.0" y="543.0">layers.exceptions.LayerUnavailableException</node>
+    <node x="-132.0" y="144.0">layers.apl.Message.Type</node>
+    <node x="2.0" y="160.0">layers.apl.ApplicationLayer</node>
+    <node x="-240.0" y="83.0">layers.apl.Message</node>
+    <node x="153.0" y="-45.0">layers.ProtocolStack</node>
+    <node x="178.0" y="-86.0">gui.Main</node>
+    <node x="-231.0" y="142.0">layers.dll.Frame.Type</node>
+    <node x="162.0" y="217.0">layers.dll.CycleCoder</node>
+    <node x="-31.0" y="414.0">gui.MessageLevel</node>
+    <node x="487.0" y="543.0">layers.exceptions.ProtocolStackException</node>
+    <node x="598.5" y="168.0">layers.phy.settings.comport_settings.ComPortSettings</node>
+    <node x="337.0" y="543.0">layers.exceptions.DecodeException</node>
+    <node x="-54.0" y="285.0">gui.DataStage</node>
+    <node x="579.0" y="239.0">layers.phy.settings.comport_settings.StopBitsEnum</node>
+    <node x="32.0" y="329.0">gui.DialogResult</node>
+    <node x="-136.0" y="83.0">layers.dll.Frame</node>
+    <node x="175.0" y="0.0">layers.ILayer</node>
+    <node x="151.0" y="80.0">layers.dll.IDataLinkLayer</node>
+    <node x="444.0" y="166.0">layers.phy.settings.comport_settings.ComSettings</node>
+    <node x="-202.25" y="286.0">gui.DataController</node>
+    <node x="137.0" y="543.0">layers.exceptions.UnexpectedChatException</node>
+    <node x="-34.0" y="543.0">layers.exceptions.ConnectionException</node>
+    <node x="-298.0" y="366.0">gui.ConnectionController</node>
+    <node x="153.0" y="160.0">layers.dll.DataLinkLayer</node>
+    <node x="288.0" y="80.0">layers.phy.IPhysicalLayer</node>
+    <node x="447.0" y="86.0">layers.phy.settings.PhySettings</node>
+    <node x="170.0" y="463.0">layers.exceptions.ChatException</node>
+    <node x="303.5" y="160.0">layers.phy.ComPort</node>
+    <node x="-120.0" y="413.0">gui.Status</node>
+    <node x="708.0" y="239.0">layers.phy.settings.comport_settings.ParityEnum</node>
+    <node x="585.0" y="88.0">layers.phy.settings.PhysicalLayerSettings</node>
+    <node x="0.0" y="80.0">layers.apl.IApplicationLayer</node>
+    <node x="546.0" y="-24.0">util.ArrayUtils</node>
+    <node x="-177.75" y="3.0">layers.PDU</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="layers.phy.settings.comport_settings.ComPortSettings" target="layers.phy.settings.PhysicalLayerSettings">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="layers.apl.ApplicationLayer" target="layers.apl.IApplicationLayer">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="layers.apl.Message" target="layers.PDU">
+      <point x="0.0" y="-15.0" />
+      <point x="-198.0" y="58.0" />
+      <point x="-163.5" y="58.0" />
+      <point x="-14.25" y="15.0" />
+    </edge>
+    <edge source="layers.dll.Frame" target="layers.PDU">
+      <point x="0.0" y="-15.0" />
+      <point x="-100.5" y="58.0" />
+      <point x="-135.0" y="58.0" />
+      <point x="14.25" y="15.0" />
+    </edge>
+    <edge source="gui.ChatController" target="gui.DataController">
+      <point x="0.0" y="-15.0" />
+      <point x="-67.0" y="341.0" />
+      <point x="-115.25" y="341.0" />
+      <point x="29.0" y="15.0" />
+    </edge>
+    <edge source="layers.dll.IDataLinkLayer" target="layers.ILayer">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="gui.ConnectionController" target="gui.DataController">
+      <point x="0.0" y="-15.0" />
+      <point x="-221.5" y="341.0" />
+      <point x="-173.25" y="341.0" />
+      <point x="-29.0" y="15.0" />
+    </edge>
+    <edge source="layers.exceptions.LayerUnavailableException" target="layers.exceptions.ChatException">
+      <point x="0.0" y="-15.0" />
+      <point x="-146.0" y="513.0" />
+      <point x="181.39999999999998" y="513.0" />
+      <point x="-45.60000000000002" y="15.0" />
+    </edge>
+    <edge source="layers.dll.DataLinkLayer" target="layers.dll.IDataLinkLayer">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="layers.exceptions.ConnectionException" target="layers.exceptions.ChatException">
+      <point x="0.0" y="-15.0" />
+      <point x="41.5" y="523.0" />
+      <point x="204.2" y="523.0" />
+      <point x="-22.80000000000001" y="15.0" />
+    </edge>
+    <edge source="layers.phy.settings.comport_settings.ComSettings" target="layers.phy.settings.PhySettings">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="layers.exceptions.UnexpectedChatException" target="layers.exceptions.ChatException">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="layers.apl.IApplicationLayer" target="layers.ILayer">
+      <point x="0.0" y="-15.0" />
+      <point x="65.5" y="55.0" />
+      <point x="186.5" y="55.0" />
+      <point x="-23.0" y="15.0" />
+    </edge>
+    <edge source="layers.phy.IPhysicalLayer" target="layers.ILayer">
+      <point x="0.0" y="-15.0" />
+      <point x="345.0" y="55.0" />
+      <point x="232.5" y="55.0" />
+      <point x="23.0" y="15.0" />
+    </edge>
+    <edge source="layers.exceptions.DecodeException" target="layers.exceptions.ChatException">
+      <point x="0.0" y="-15.0" />
+      <point x="402.0" y="523.0" />
+      <point x="249.79999999999995" y="523.0" />
+      <point x="22.799999999999955" y="15.0" />
+    </edge>
+    <edge source="layers.phy.ComPort" target="layers.phy.IPhysicalLayer">
+      <point x="0.0" y="-15.0" />
+      <point x="0.0" y="15.0" />
+    </edge>
+    <edge source="layers.exceptions.ProtocolStackException" target="layers.exceptions.ChatException">
+      <point x="0.0" y="-15.0" />
+      <point x="569.5" y="513.0" />
+      <point x="272.59999999999997" y="513.0" />
+      <point x="45.599999999999966" y="15.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="202.0" y="159.5" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
