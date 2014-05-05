@@ -31,10 +31,9 @@ public class DataLinkLayer implements IDataLinkLayer {
     private AtomicBoolean forceSending = new AtomicBoolean(false);
 
 
-    private Thread sendingThread;
     private boolean sendingActive = false;
     private static final int SENDING_DELAY = 100;
-    private static final int SENDING_TIMEOUT = 3000;
+    private static final int SENDING_TIMEOUT = 2000;
     private static final int ACCESSING_PHY_TIMEOUT = 5000;
 
 
@@ -115,7 +114,7 @@ public class DataLinkLayer implements IDataLinkLayer {
     public void connect(PhysicalLayerSettings settings) throws ConnectionException {
         getLowerLayer().initMarkBytes(Frame.START_BYTE, Frame.STOP_BYTE);
         getLowerLayer().connect(settings);
-        sendingThread = new Thread(this::sendingThreadJob);
+        Thread sendingThread = new Thread(this::sendingThreadJob);
         sendingActive = true;
         sendingThread.start();
     }
@@ -157,7 +156,7 @@ public class DataLinkLayer implements IDataLinkLayer {
         Frame frame = Frame.deserialize(data);
 //        System.out.println("isCorrect: " + frame.isCorrect());
 
-        if (frame == null || frame.getType() != Frame.Type.I && !frame.isCorrect())
+        if (frame.getType() != Frame.Type.I && !frame.isCorrect())
             return; // throw away this frame
 
         switch (frame.getType()) {

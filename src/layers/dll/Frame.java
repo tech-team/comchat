@@ -19,8 +19,9 @@ public class Frame implements PDU {
         }
     }
 
+    public static final int MIN_SIZE = 2;
     public static final int MAX_SIZE = 128;
-    public static final int MAX_MSG_SIZE = MAX_SIZE - 2;
+    public static final int MAX_MSG_SIZE = MAX_SIZE - MIN_SIZE;
 
 
     private boolean ACK = false;
@@ -35,7 +36,7 @@ public class Frame implements PDU {
     private Type type;
     private byte[] msg;
 
-    private boolean correct;
+    private boolean correct = true;
     private static CycleCoder cc = new CycleCoder();
 
     private Frame(Type type, byte[] msg) {
@@ -161,12 +162,13 @@ public class Frame implements PDU {
     }
 
     public static Frame deserialize(byte[] data) {
-        boolean correct = true;
         try {
             data = cc.decode(data);
         } catch (DecodeException e) {
-            correct = false;
-            return null;
+            Type type = data.length == MIN_SIZE ? Type.S : Type.I;
+            Frame frame = new Frame(type, null);
+            frame.setCorrect(false);
+            return frame;
         }
 
         byte typeByte = data[0];
@@ -192,7 +194,6 @@ public class Frame implements PDU {
         frame.setRET(RET != 0);
         frame.setCHUNKS(CHUNKS != 0);
         frame.setEND_CHUNKS(END_CHUNKS != 0);
-        frame.setCorrect(true);
 
         return frame;
     }
