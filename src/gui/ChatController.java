@@ -216,6 +216,9 @@ public class ChatController extends DataController {
     private void send() {
         String message = inputField.getText();
 
+        if (message.isEmpty())
+            return;
+
         int id = protocolStack.getApl().send(Message.Type.Msg, message);
 
         addUserMessage(localUser, message, id);
