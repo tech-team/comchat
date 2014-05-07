@@ -137,12 +137,20 @@ public class ChatController extends DataController {
                 statusIcon.setFill(status.toColor());
                 statusText.setText(status.toString());
                 sendButton.setDisable(!connected);
+
+                if (status != Status.Chatting)
+                    ctsIcon.setFill(Color.RED);
             });
         }
     }
 
     private void updateCTS(boolean CTS) {
         Platform.runLater(() -> {
+            if (status != Status.Chatting) {
+                ctsIcon.setFill(Color.RED);
+                return;
+            }
+
             if (CTS)
                 ctsIcon.setFill(Color.YELLOWGREEN);
             else

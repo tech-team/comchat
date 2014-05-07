@@ -317,7 +317,10 @@ public class ComPort implements IPhysicalLayer, SerialPortEventListener {
 
             case SerialPortEvent.CTS:
                 System.out.println("CTS = [" + serialPort.isCTS() + "]");
-                notifySendingAvailableChanged(serialPort.isCTS());
+                if (serialPort.isDSR())
+                    notifySendingAvailableChanged(serialPort.isCTS());
+                else
+                    notifySendingAvailableChanged(false);
                 break;
 
             case SerialPortEvent.DSR:
